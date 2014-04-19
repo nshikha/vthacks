@@ -153,8 +153,15 @@ var SnakeGame = function(width, height) {
                 // create a snakeUser and bind to self.snakeUser
                 self.snakeUser = new SnakeUser(self, socket, true);
                 socket.emit('init', 'snake');
-                self.snakeUser.setupSocketBindings(socket);
+                // self.snakeUser.setupSocketBindings(socket);
                 self.snakeUser.startSnakeLoop(500);
+
+                //THIS IS TEMP FOR TESTING
+                var user = new User(self, socket);
+                self.foodUsers.push(user);
+                socket.emit('init', 'food');
+                user.setupSocketBindings(socket);
+
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);

@@ -1,10 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
 <div class="title">
-<p>    Initial page
+<!-- <p>    Initial page
 <p>    Try to join game as snake by making a socket connection
 <p>    If the reply says snake then you are snake and insert a snake.js code script tag into the dom
-<p>    Else you are a food and insert a controller.js code script tag into the dom
+<p>    Else you are a food and insert a controller.js code script tag into the dom -->
+<!-- <div id="test"> hi </div> -->
+<div id="test"> hi </div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1-beta1/jquery.min.js"></script>
+<div id = "container" visible="false">
+  <canvas id="userCanvas" style="border:1px solid #000000;">
+    no canvas
+  </canvas> 
+</div>
+<meta name=viewport
+  content="width=device-width, initial-scale=1.0, minimum-scale=0.5 maximum-scale=1.0">
+<script src="/config.js"></script>
 <script>
   var socket = io.connect('http://localhost:3000');
   socket.on('init', function (data) {

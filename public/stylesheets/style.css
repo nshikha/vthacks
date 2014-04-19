@@ -6,3 +6,15 @@ body {
 a {
   color: #00B7FF;
 }
+
+
+#hi {
+  width: 40px;
+  height: 40px;
+}
+
+#container canvas {
+  width: 100%;
+  height: 100%;
+
+}
