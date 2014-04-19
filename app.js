@@ -104,8 +104,12 @@ var SnakeUser = function(snakeGame, socket) {
 
     this.setupSocketBindings = function(socket) {
         socket.on('snake::changeDirection', function(input) {
-            // assert input in ['l', 'r', 'u', 'd']
-            self.direction = input;
+            // assert input is one of ['l', 'r', 'u', 'd']
+            var oppDirs = {'l':'r', 'r':'l', 'u':'d', 'd': 'u'};
+            // NOOP if input makes snake go backwards
+            if (self.direction !== oppDirs[input]) {
+                self.direction = input;
+            }
         });
 
         socket.on('disconnect', function() {
