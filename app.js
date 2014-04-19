@@ -30,19 +30,36 @@ var PORT = 3000;
 var _id_ = 0;
 var getUID = function() { return (_id_++).toString(); };
 
-var Piece = function(snakeGame, x, y) {
+var Piece = function(snakeGame, x, y, type) {
     this.id = getUID();
     this.snakeGame = snakeGame;
     this.x = x;
     this.y = y;
+    this.type = type;
 
     var self = this;
 
-    this.update = function() {
-        this.snakeGame.snakeUser.socket.emit('piece::update', this.id.toString());
+    // pieces bookkeeping
+    this.snakeGame.pieces.push(this);
+
+    this.JSON = function() {
+        return { id: self.id.toString(),
+            x: self.x,
+            y: self.y };
+
     };
+
+    this.update = function() {
+        self.snakeGame.snakeUser.socket.emit('piece::update', self.JSON());
+    };
+
     this.disappear = function() {
         this.snakeGame.snakeUser.socket.emit('piece::disappear', this.id.toString());
+
+        // pieces bookkeeping
+        // remove the piece from the pieces array in snakeGame
+        var index = self.snakeGame.pieces.indexOf(self);
+        self.snakeGame.pieces.splice(index, 1);
     };
 };
 
@@ -50,11 +67,17 @@ var User = function(snakeGame, socket) {
     this.snakeGame = snakeGame;
     this.socket = socket;
     this.id = getUID();
-    this.piece = new Piece(snakeGame, 5,5);
+    this.piece = new Piece(snakeGame, 5, 5, 'food');
     var self = this;
 
     this.setupSocketBindings = function(socket) {
         self.socket.on('controller::data', function(input) {
+            if (self.piece.isEaten) {
+                // user moved eaten food
+                console.log('ignoring because eaten');
+            } else {
+                // move self.piece and update
+            }
         });
 
         self.socket.on('disconnect', function() {
@@ -77,15 +100,28 @@ var SnakeUser = function(snakeGame, socket) {
     this.snakeGame = snakeGame;
     this.socket = socket;
     this.id = getUID();
-    this.pieces = [];
-    this.pieces = [new Piece(this, 3,3), new Piece(this, 4,3), new Piece(this, 5,3)];
+
+    // SNAKE PIECES
+    this.snakePieces = [new Piece(snakeGame, 3, 3, 'snake'),
+                       new Piece(snakeGame, 4, 3, 'snake'),
+                       new Piece(snakeGame, 5, 3, 'snake')];
+
+    this.direction = 'l';
+    this.alive = true;
+
     var self = this;
-    this.direction = 'r';
 
     this.setupSocketBindings = function(socket) {
         socket.on('snake::changeDirection', function(input) {
-            // assert input in ['l', 'r', 'u', 'd']
-            self.direction = input;
+            if (self.alive) {
+                // assert input is one of ['l', 'r', 'u', 'd']
+                var oppDirs = {'l':'r', 'r':'l', 'u':'d', 'd': 'u'};
+                // NOOP if input makes snake go backwards
+                if (self.direction !== input && self.direction !== oppDirs[input]) {
+                    console.log('changing dir to '+input);
+                    self.direction = input;
+                }
+            }
         });
 
         socket.on('disconnect', function() {
@@ -95,36 +131,63 @@ var SnakeUser = function(snakeGame, socket) {
     };
 
     this.snakeLoopIter = function() {
-        var head = self.pieces[0];
+        var head = self.snakePieces[0];
         var newx = head.x, newy = head.y;
         if (self.direction === 'l')
             newx --;
         if (self.direction === 'r')
             newx ++;
         if (self.direction === 'u')
-            newy ++;
-        if (self.direction === 'd')
             newy --;
+        if (self.direction === 'd')
+            newy ++;
 
         // if boundary, then snake game over
-        // if snake, then snake game over
-        // if food is there, then snake gets longer, food dies
-        // else
-            var p = self.pieces.pop();
-            p.disappear();
-        var newP = new Piece(self.snakeGame, newx, newy);
-        newP.update();
-        self.pieces = [p].concat(self.pieces);
+        if (self.snakeGame.coordOutOfBounds(newx, newy)) {
+            console.log('outofbounds');
+            self.die();
+            return;
+        }
+        var anticipatedPiece = self.snakeGame.getPieceAtCoord(newx, newy);
+        var newP;
+        if (anticipatedPiece) {
+            if (anticipatedPiece.type === 'snake') {
+                // if snake, then snake game over
+                console.log('snakehitself');
+                self.die();
+                return;
+            } else {
+                // if food is there, then snake gets longer (doesnt get shorter), food isEaten
+                console.log('eatingfood');
+                anticipatedPiece.isEaten = true;
+                newP = anticipatedPiece;
+            }
+        } else {
+            // else (this makes snake shorter)
+            self.snakePieces.pop().disappear();
+            newP = new Piece(self.snakeGame, newx, newy, 'snake'); // this is a hack #sikkaaaa
+            newP.update();
+            console.log('move is clear');
+        }
+        self.snakePieces = [newP].concat(self.snakePieces);
+        console.log('moved '+self.direction+' **');
     };
 
     this.startSnakeLoop = function(delay) {
-        //setInterval(self.snakeLoopIter, delay);
+        self.loopid = setInterval(function() {
+            if (self.alive) self.snakeLoopIter();
+        }, delay);
     };
 
+    this.die = function () {
+        self.alive = false;
+        clearInterval(self.loopid);
+    }
+
     this.disappear = function() {
-        while (self.pieces.length > 0) {
+        while (self.snakePieces.length > 0) {
             p.disappear();
-            var p = self.pieces.pop();
+            var p = self.snakePieces.pop();
         }
     };
 
@@ -135,7 +198,7 @@ var SnakeGame = function(width, height) {
     this.width = width;
     this.height = height;
 
-    this.pieces = {};
+    this.pieces = []; //automatically kept consistent by the Piece class
 
     // When snakeUser is null, the game has not yet started and is waiting for a snake to connect.
     this.snakeUser = null;
@@ -145,6 +208,20 @@ var SnakeGame = function(width, height) {
 
     this.hasStarted = function() {
         return self.snakeUser !== null;
+    };
+    
+    this.coordOutOfBounds = function(x, y) {
+        return (x < 0) || (x >= self.width) ||
+                   (y < 0) || (y >= self.height);
+    };
+    this.getPieceAtCoord = function(x, y) {
+        var p;
+        for (var i = 0; i < self.pieces.length; i ++) {
+            p = self.pieces[i];
+            if ((p.x === x) && (p.y === y))
+                return p;
+        }
+        return null;
     };
 
     this.setupIO = function() {
