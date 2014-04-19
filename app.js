@@ -46,16 +46,14 @@ var Piece = function(snakeGame, x, y) {
     };
 };
 
-var User = function(snakeGame, socket, isSnake) {
+var User = function(snakeGame, socket) {
     this.snakeGame = snakeGame;
     this.socket = socket;
     this.id = getUID();
-    if (isSnake)
-        this.isSnake = true;
     this.pieces = [];
     var self = this;
 
-    this.setupSocketBindings = function() {
+    this.setupSocketBindings = function(socket) {
         self.socket.on('controller::data', function(input) {
         });
 
@@ -64,6 +62,34 @@ var User = function(snakeGame, socket, isSnake) {
             // remove the user from the list of users.
             var index = self.snakeGame.foodUsers.indexOf(user);
             self.snakeGame.foodUsers.splice(index, 1);
+        });
+    };
+
+    this.disappear = function() {
+        while (self.pieces.length > 0) {
+            p.disappear();
+            var p = self.pieces.pop();
+        }
+    };
+};
+
+var SnakeUser = function(snakeGame, socket) {
+    this.snakeGame = snakeGame;
+    this.socket = socket;
+    this.id = getUID();
+    this.pieces = [];
+    var self = this;
+    this.direction = 'r';
+
+    this.setupSocketBindings = function(socket) {
+        self.socket.on('snake::changeDirection', function(input) {
+            // assert input in ['l', 'r', 'u', 'd']
+            self.direction = input;
+        });
+
+        self.socket.on('disconnect', function() {
+            // game over
+            process.exit(0);
         });
     };
 
@@ -97,20 +123,15 @@ var SnakeGame = function(width, height) {
         self.io.sockets.on('connection', function (socket) {
             if (!self.hasStarted()) {
                 // create a snakeUser and bind to self.snakeUser
-                self.snakeUser = new User(self, socket, true);
+                self.snakeUser = new SnakeUser(self, socket, true);
                 socket.emit('init', 'snake');
-                socket.on('disconnect', function() {
-                    // game over
-                    process.exit(0);
-                });
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
                 self.foodUsers.push();
                 socket.emit('init', 'food');
-                user.setupSocketBindings();
-
             }
+            user.setupSocketBindings();
             /** examples for reference
             socket.emit('news', { hello: 'world' });
             socket.on('my other event', function (data) {
