@@ -93,6 +93,33 @@ var SnakeUser = function(snakeGame, socket) {
         });
     };
 
+    this.snakeLoopIter = function() {
+        var head = self.pieces[0];
+        var newx = head.x, newy = head.y;
+        if (direction === 'l')
+            newx --;
+        if (direction === 'r')
+            newx ++;
+        if (direction === 'u')
+            newy ++;
+        if (direction === 'd')
+            newy --;
+
+        // if boundary, then snake game over
+        // if snake, then snake game over
+        // if food is there, then snake gets longer, food dies
+        // else
+            var p = self.pieces.pop();
+            p.disappear();
+        var newP = new Piece(self.snakeGame, newx, newy);
+        newP.update();
+        self.pieces = [p].concat(self.pieces);
+    };
+
+    this.startSnakeLoop = function(delay) {
+        setInterval(snakeLoopIter, delay);
+    };
+
     this.disappear = function() {
         while (self.pieces.length > 0) {
             p.disappear();
@@ -125,13 +152,15 @@ var SnakeGame = function(width, height) {
                 // create a snakeUser and bind to self.snakeUser
                 self.snakeUser = new SnakeUser(self, socket, true);
                 socket.emit('init', 'snake');
+                user.setupSocketBindings();
+                user.startSnakeLoop(500);
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
                 self.foodUsers.push();
                 socket.emit('init', 'food');
+                user.setupSocketBindings();
             }
-            user.setupSocketBindings();
             /** examples for reference
             socket.emit('news', { hello: 'world' });
             socket.on('my other event', function (data) {
