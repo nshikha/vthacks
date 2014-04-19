@@ -35,8 +35,11 @@ var Piece = function(x, y) {
     this.x = x;
     this.y = y;
 };
-var User = function(socket) {
+var User = function(socket, isSnake) {
     this.socket = socket;
+    this.id = getUID();
+    if (isSnake)
+        this.isSnake = true;
 };
 var SnakeGame = function(width, height) {
 
@@ -59,8 +62,12 @@ var SnakeGame = function(width, height) {
         self.io.sockets.on('connection', function (socket) {
             if (!self.hasStarted()) {
                 // create a snakeUser and bind to self.snakeUser
+                this.snakeUser = new User(socket, true);
+                socket.emit('snake');
             } else {
                 // create a foodUser and push onto self.foodUsers
+                this.foodUsers.push(new User(socket));
+                socket.emit('food');
             }
             /** examples for reference
             socket.emit('news', { hello: 'world' });
