@@ -1,31 +1,39 @@
+
+
 var start = function(socket) {
-  
-  var obj = document.getElementById('test');
-  obj.addEventListener('touchmove', function(event) {
-    alert("hi");
-    // If there's exactly one finger inside this element
-    if (event.targetTouches.length == 1) {
-      var touch = event.targetTouches[0];
-      // Place element where the finger is
-      obj.style.left = touch.pageX + '20px';
-      obj.style.top = touch.pageY + '20px';
-    }
-  }, false); 
 
-  obj.addEventListener("click", function(event) {
-      alert("hi");
-      obj.style.left += '20px';
-      obj.style.top += '20px';
-  }, false); 
+  $('body').append('<link rel="stylesheet" type="text/css" href="/stylesheets/controller.css">');
 
+
+  document.body.addEventListener('touchmove', function(event) {
+    event.preventDefault();
+  }, false); 
 
   var canvas = document.getElementById(config["userCanvas"]);
   var ctx = canvas.getContext("2d");
-  var width = canvas.width;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var radius = 40; 
 
-  var canvasX = canvas.width/2;
-  var canvasY = canvas.height/2;
-  var radius = 60; 
+  var dragging;
+  var mouseX;
+  var mouseY;
+  var dragHoldX;
+  var dragHoldY;
+  var position = {x: canvas.width/2, y:canvas.height/2}
+
+  init();
+
+  function init() {
+    drawScreen();
+    canvas.addEventListener("mousedown", mouseDownListener, false);
+    canvas.addEventListener("touchstart", mouseDownListener, false);
+  }
+
+  function drawScreen() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawCircle(ctx, position.x, position.y, radius);
+  }
 
   function drawCircle(ctx, cx, cy, radius) {
     ctx.beginPath();
@@ -33,33 +41,103 @@ var start = function(socket) {
     ctx.fill();
   }
 
+  function mouseDownListener(evt) {
+    //getting mouse position correctly, being mindful of resizing that may have occured in the browser:
+    var bRect = canvas.getBoundingClientRect();
+    mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
+    mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
-  function isWithinCircle(px, py) {
-    var dx = px - cx;
-    dx = dx * dx;
-    var dy = py - cy;
-    dy = dy * dy;
-    var dist = Math.sqrt(dx + dy);
-    return (dist < radius);
+    if (hitTest(mouseX, mouseY)) {
+      dragging = true;
+      dragHoldX = mouseX - position.x;
+      dragHoldY = mouseY - position.y;
+    }
+    
+    if (dragging) {
+      window.addEventListener("mousemove", mouseMoveListener, false);
+      window.addEventListener("touchmove", mouseMoveListener, false);
+    }
+    canvas.removeEventListener("mousedown", mouseDownListener, false);
+    canvas.removeEventListener("touchstart", mouseDownListener, false);
+    window.addEventListener("mouseup", mouseUpListener, false);
+    window.addEventListener("touchend", mouseUpListener, false);
+    
+    //code below prevents the mouse down from having an effect on the main browser window
+    if (evt.preventDefault) {
+      evt.preventDefault();
+    } //standard
+    else if (evt.returnValue) {
+      evt.returnValue = false;
+    } //older IE
+    return false;
+  }
+  
+  function mouseUpListener(evt) {
+    canvas.addEventListener("mousedown", mouseDownListener, false);
+    canvas.addEventListener("touchstart", mouseDownListener, false);
+    window.removeEventListener("mouseup", mouseUpListener, false);
+    window.removeEventListener("touchend", mouseDownListener, false);
+    if (dragging) {
+      dragging = false;
+      position.x = canvas.width/2;
+      position.y = canvas.height/2;
+      drawScreen();
+      window.removeEventListener("mousemove", mouseMoveListener, false);
+      window.removeEventListener("touchmove", mouseMoveListener, false);
+    }
   }
 
-  drawCircle(ctx, canvasX, canvasY, radius);
-  
-  canvas.addEventListener('touchmove', function(event) {
-    event.preventDefault();
-    for (var i = 0; i < event.targetTouches.length; i++) {
-      var touch = event.targetTouches[i];
-      var px = touch.pageX;
-      var py = touch.pageY;
-      drawCircle(ctx, px, py, radius);
-      if (isWithinCircle(px, py)) {
-        var left = cx - radius/2;
-        var top = cy - radius/2;
-        ctx.clearRect(0, 0, canvasX*2, canvasY*2);
-        drawCircle(ctx, px, py, radius);
-      }
+  function mouseMoveListener(evt) {
+    var posX;
+    var posY;
+    var minX = radius;
+    var maxX = canvas.width - radius;
+    var minY = radius;
+    var maxY = canvas.height - radius;
+    //getting mouse position correctly 
+    var bRect = canvas.getBoundingClientRect();
+    mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
+    mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
+    
+    //clamp x and y positions to prevent object from dragging outside of canvas
+    posX = mouseX - dragHoldX;
+    posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
+    posY = mouseY - dragHoldY;
+    posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
+
+    position.x = posX;
+    position.y = posY;
+    //setPositions(posX, posY);
+
+    drawScreen();
+  }
+
+  function setPositions(posX, posY) {
+    circleX = position.x
+    circleY = position.y
+    var x = posX - circleX;
+    var y = posY - circleY;
+    position.x = posX;
+    position.y = posY;
+    //horizontal
+    if ((x+y)*(x-y) > 0) {
+      position.x = 0;
     }
-  }, false);  
+    //vertical
+    else {
+      position.y = 0;
+    }
+
+  }
+  
+  function hitTest(px, py) {
+    var dx = px - position.x;
+    var dy = py - position.y;
+    return (dx*dx + dy*dy < radius*radius);
+  }
+
+
+
 
 
 };

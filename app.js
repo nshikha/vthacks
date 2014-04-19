@@ -131,6 +131,7 @@ var SnakeUser = function(snakeGame, socket) {
     };
 
     this.snakeLoopIter = function() {
+            self.die();
         var head = self.snakePieces[0];
         var newx = head.x, newy = head.y;
         if (self.direction === 'l')
@@ -230,14 +231,14 @@ var SnakeGame = function(width, height) {
                 // create a snakeUser and bind to self.snakeUser
                 self.snakeUser = new SnakeUser(self, socket, true);
                 socket.emit('init', 'snake');
-                // self.snakeUser.setupSocketBindings(socket);
+                self.snakeUser.setupSocketBindings(socket);
                 self.snakeUser.startSnakeLoop(500);
 
-                //THIS IS TEMP FOR TESTING
+                /* THIS IS TEMP FOR TESTING
                 var user = new User(self, socket);
                 self.foodUsers.push(user);
                 socket.emit('init', 'food');
-                user.setupSocketBindings(socket);
+                user.setupSocketBindings(socket); */
 
             } else {
                 // create a foodUser and push onto self.foodUsers

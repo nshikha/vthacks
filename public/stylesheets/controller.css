@@ -1,0 +1,14 @@
+body {
+  padding:0;
+  margin:0;
+}
+canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+#test {
+  width: 60px;
+  height: 60px;
+  background-color: red;
+}
