@@ -15,7 +15,6 @@ var setupKeyBindings = function (socket) {
     bind('down');
     bind('left');
 
-
 };
 
 var buildBoard = function() {
@@ -57,8 +56,27 @@ var buildBoard = function() {
 
 };
 
+
 var start = function(socket) {
     alert('loaded snake');
     setupKeyBindings(socket);
     buildBoard();
 };
+
+socket.on('piece::update', function(pieceJSON) {
+    //get piece
+    console.log(pieceJSON)
+    piece = $('#piece-'+pieceJSON['y']+'-'+pieceJSON['x']);
+    if (!piece)
+        console.log('THIS IS VERY BAD -> Could not find the piece');
+    //change piece's attributes according to the JSON
+    piece.css('background-color', 'blue');
+
+});
+
+socket.on('piece::disappear', function(pieceJSON) {
+    console.log(pieceJSON);
+    $('#piece-'+pieceJSON['y']+'-'+pieceJSON['x']).css('background-color', 'white');
+});
+
+
