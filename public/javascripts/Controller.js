@@ -1,5 +1,3 @@
-
-
 var start = function(socket) {
 
   $('body').append('<link rel="stylesheet" type="text/css" href="/stylesheets/controller.css">');
@@ -164,10 +162,10 @@ var start = function(socket) {
     if ( x + y > 0 && x-y > 0) {
       return "down";
     }
-    else if (x+y < 0 and x-y > 0) {
+    else if (x+y < 0 && x-y > 0) {
       return "up";
     }
-    else if (x+y < 0 and x-y < 0) {
+    else if (x+y < 0 && x-y < 0) {
       return "left";
     }
     else {
