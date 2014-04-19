@@ -6,6 +6,7 @@
 var express = require('express');
 
 var app = module.exports = express.createServer();
+var _ = require('underscore');
 
 // Configuration
 
@@ -45,16 +46,18 @@ var Piece = function(snakeGame, x, y, type) {
     this.JSON = function() {
         return { id: self.id.toString(),
             x: self.x,
-            y: self.y };
+            y: self.y , 
+            type: self.type};
 
     };
 
     this.update = function() {
+        // snakeUser's socket is the snake board socket
         self.snakeGame.snakeUser.socket.emit('piece::update', self.JSON());
     };
 
     this.disappear = function() {
-        this.snakeGame.snakeUser.socket.emit('piece::disappear', this.id.toString());
+        this.snakeGame.snakeUser.socket.emit('piece::disappear', self.JSON());
 
         // pieces bookkeeping
         // remove the piece from the pieces array in snakeGame
@@ -67,7 +70,11 @@ var User = function(snakeGame, socket) {
     this.snakeGame = snakeGame;
     this.socket = socket;
     this.id = getUID();
+
     this.piece = new Piece(snakeGame, 5, 5, 'food');
+
+    this.piece.update();
+
     var self = this;
 
     this.setupSocketBindings = function(socket) {
@@ -81,18 +88,16 @@ var User = function(snakeGame, socket) {
         });
 
         self.socket.on('disconnect', function() {
-            this.disappear();
+            self.disappear();
             // remove the user from the list of users.
-            var index = self.snakeGame.foodUsers.indexOf(user);
+            var index = self.snakeGame.foodUsers.indexOf(self);
             self.snakeGame.foodUsers.splice(index, 1);
         });
     };
 
     this.disappear = function() {
-        while (self.pieces.length > 0) {
-            p.disappear();
-            var p = self.pieces.pop();
-        }
+        if (!self.piece.eaten)
+            self.piece.disappear();
     };
 };
 
@@ -102,26 +107,36 @@ var SnakeUser = function(snakeGame, socket) {
     this.id = getUID();
 
     // SNAKE PIECES
-    this.snakePieces = [new Piece(snakeGame, 3, 3, 'snake'),
-                       new Piece(snakeGame, 4, 3, 'snake'),
-                       new Piece(snakeGame, 5, 3, 'snake')];
+    this.snakePieces = [new Piece(snakeGame, 3, 5, 'snake'),
+                       new Piece(snakeGame, 3, 4, 'snake'),
+                       new Piece(snakeGame, 3, 3, 'snake')];
 
-    this.direction = 'l';
+
+    this.lastDirection = '';
+    this.direction = 'r';
     this.alive = true;
 
     var self = this;
 
     this.setupSocketBindings = function(socket) {
+        _.each(self.snakePieces, function(p) {
+            p.update();
+        });
         socket.on('snake::changeDirection', function(input) {
             if (self.alive) {
                 // assert input is one of ['l', 'r', 'u', 'd']
                 var oppDirs = {'l':'r', 'r':'l', 'u':'d', 'd': 'u'};
                 // NOOP if input makes snake go backwards
-                if (self.direction !== input && self.direction !== oppDirs[input]) {
+                if ((self.lastDirection != input) && (self.lastDirection != oppDirs[input])) {
                     console.log('changing dir to '+input);
                     self.direction = input;
                 }
             }
+        });
+
+        socket.on('snake::setBoardSize', function(wh) {
+            self.snakeGame.width = wh.width;
+            self.snakeGame.height = wh.height;
         });
 
         socket.on('disconnect', function() {
@@ -149,8 +164,17 @@ var SnakeUser = function(snakeGame, socket) {
             self.die();
             return;
         }
+
+        // get the piece at the anticipated spot
+        var tail = self.snakePieces[self.snakePieces.length - 1];
+
+        // if it's the end of tail, normal case, jk lol the tail is moving
         var anticipatedPiece = self.snakeGame.getPieceAtCoord(newx, newy);
+        if (anticipatedPiece === tail)
+            anticipatedPiece = null;
+
         var newP;
+        //added fix for case that you are going to overlap the tail of the snake
         if (anticipatedPiece) {
             if (anticipatedPiece.type === 'snake') {
                 // if snake, then snake game over
@@ -159,19 +183,23 @@ var SnakeUser = function(snakeGame, socket) {
                 return;
             } else {
                 // if food is there, then snake gets longer (doesnt get shorter), food isEaten
-                console.log('eatingfood');
+                console.log('eatingfood\n\n\n\n\n\n\n\n\n\n\n');
                 anticipatedPiece.isEaten = true;
-                newP = anticipatedPiece;
+                anticipatedPiece.disappear();
             }
         } else {
-            // else (this makes snake shorter)
+            //pops tail off in normal case of snake moving.
             self.snakePieces.pop().disappear();
-            newP = new Piece(self.snakeGame, newx, newy, 'snake'); // this is a hack #sikkaaaa
-            newP.update();
-            console.log('move is clear');
         }
+
+        newP = new Piece(self.snakeGame, newx, newy, 'snake');
+
+        newP.update();
+        console.log('move is clear');
+
         self.snakePieces = [newP].concat(self.snakePieces);
         console.log('moved '+self.direction+' **');
+        this.lastDirection = self.direction; //cache last moved direction to avoid collissions.
     };
 
     this.startSnakeLoop = function(delay) {
@@ -196,8 +224,8 @@ var SnakeUser = function(snakeGame, socket) {
 
 var SnakeGame = function(width, height) {
 
-    this.width = width;
-    this.height = height;
+    this.width;
+    this.height;
 
     this.pieces = []; //automatically kept consistent by the Piece class
 
@@ -231,15 +259,9 @@ var SnakeGame = function(width, height) {
                 // create a snakeUser and bind to self.snakeUser
                 self.snakeUser = new SnakeUser(self, socket, true);
                 socket.emit('init', 'snake');
+
                 self.snakeUser.setupSocketBindings(socket);
-                self.snakeUser.startSnakeLoop(500);
-
-                /* THIS IS TEMP FOR TESTING
-                var user = new User(self, socket);
-                self.foodUsers.push(user);
-                socket.emit('init', 'food');
-                user.setupSocketBindings(socket); */
-
+                self.snakeUser.startSnakeLoop(250);
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
@@ -247,12 +269,6 @@ var SnakeGame = function(width, height) {
                 socket.emit('init', 'food');
                 user.setupSocketBindings(socket);
             }
-            /** examples for reference
-            socket.emit('news', { hello: 'world' });
-            socket.on('my other event', function (data) {
-                console.log(data);
-            });
-            */
         });
     };
 
@@ -272,5 +288,5 @@ app.listen(3000, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 });
 
-var s = new SnakeGame(200, 125);
+var s = new SnakeGame();
 s.serve();
