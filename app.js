@@ -63,11 +63,11 @@ var SnakeGame = function(width, height) {
             if (!self.hasStarted()) {
                 // create a snakeUser and bind to self.snakeUser
                 this.snakeUser = new User(socket, true);
-                socket.emit('snake');
+                socket.emit('init', 'snake');
             } else {
                 // create a foodUser and push onto self.foodUsers
                 this.foodUsers.push(new User(socket));
-                socket.emit('food');
+                socket.emit('init', 'food');
             }
             /** examples for reference
             socket.emit('news', { hello: 'world' });
@@ -78,8 +78,8 @@ var SnakeGame = function(width, height) {
         });
     };
 
-    this.serve = function(port) {
-        self.io = require('socket.io').listen(port);
+    this.serve = function() {
+        self.io = require('socket.io').listen(app);
         self.setupIO();
     };
 };
@@ -95,4 +95,4 @@ app.listen(3000, function(){
 });
 
 var s = new SnakeGame(200, 125);
-s.serve(3001);
+s.serve();
