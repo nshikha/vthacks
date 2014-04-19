@@ -44,7 +44,7 @@ var buildBoard = function() {
     var drawRow = function(rowIndex, numPieces) {
         $('#board').append('<div id="row-'+rowIndex+'" class="row"></div>');
         for (var i = 0; i < numPieces; i ++) {
-            $('#row-'+rowIndex).append('<div id="col-'+i+'" class="piece"></div>');
+            $('#row-'+rowIndex).append('<div id="piece-'+rowIndex+'-'+i+'" class="piece"></div>');
         }
     };
 
