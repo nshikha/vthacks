@@ -39,10 +39,10 @@ var Piece = function(snakeGame, x, y) {
     var self = this;
 
     this.update = function() {
-        this.snakeGame.socket.emit('piece::update', this.id.toString());
+        this.snakeGame.snakeUser.socket.emit('piece::update', this.id.toString());
     };
     this.disappear = function() {
-        this.snakeGame.socket.emit('piece::disappear', this.id.toString());
+        this.snakeGame.snakeUser.socket.emit('piece::disappear', this.id.toString());
     };
 };
 
@@ -50,7 +50,7 @@ var User = function(snakeGame, socket) {
     this.snakeGame = snakeGame;
     this.socket = socket;
     this.id = getUID();
-    this.pieces = [];
+    this.piece = new Piece(snakeGame, 5,5);
     var self = this;
 
     this.setupSocketBindings = function(socket) {
@@ -78,16 +78,17 @@ var SnakeUser = function(snakeGame, socket) {
     this.socket = socket;
     this.id = getUID();
     this.pieces = [];
+    this.pieces = [new Piece(this, 3,3), new Piece(this, 4,3), new Piece(this, 5,3)];
     var self = this;
     this.direction = 'r';
 
     this.setupSocketBindings = function(socket) {
-        self.socket.on('snake::changeDirection', function(input) {
+        socket.on('snake::changeDirection', function(input) {
             // assert input in ['l', 'r', 'u', 'd']
             self.direction = input;
         });
 
-        self.socket.on('disconnect', function() {
+        socket.on('disconnect', function() {
             // game over
             process.exit(0);
         });
@@ -96,13 +97,13 @@ var SnakeUser = function(snakeGame, socket) {
     this.snakeLoopIter = function() {
         var head = self.pieces[0];
         var newx = head.x, newy = head.y;
-        if (direction === 'l')
+        if (self.direction === 'l')
             newx --;
-        if (direction === 'r')
+        if (self.direction === 'r')
             newx ++;
-        if (direction === 'u')
+        if (self.direction === 'u')
             newy ++;
-        if (direction === 'd')
+        if (self.direction === 'd')
             newy --;
 
         // if boundary, then snake game over
@@ -117,7 +118,7 @@ var SnakeUser = function(snakeGame, socket) {
     };
 
     this.startSnakeLoop = function(delay) {
-        setInterval(snakeLoopIter, delay);
+        //setInterval(self.snakeLoopIter, delay);
     };
 
     this.disappear = function() {
@@ -134,7 +135,7 @@ var SnakeGame = function(width, height) {
     this.width = width;
     this.height = height;
 
-    this.snakePieces = [new Piece(this, 3,3), new Piece(this, 4,3), new Piece(this, 5,3)];
+    this.pieces = {};
 
     // When snakeUser is null, the game has not yet started and is waiting for a snake to connect.
     this.snakeUser = null;
@@ -152,14 +153,14 @@ var SnakeGame = function(width, height) {
                 // create a snakeUser and bind to self.snakeUser
                 self.snakeUser = new SnakeUser(self, socket, true);
                 socket.emit('init', 'snake');
-                user.setupSocketBindings();
-                user.startSnakeLoop(500);
+                self.snakeUser.setupSocketBindings(socket);
+                self.snakeUser.startSnakeLoop(500);
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
-                self.foodUsers.push();
+                self.foodUsers.push(user);
                 socket.emit('init', 'food');
-                user.setupSocketBindings();
+                user.setupSocketBindings(socket);
             }
             /** examples for reference
             socket.emit('news', { hello: 'world' });
