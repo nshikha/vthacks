@@ -28,25 +28,47 @@ app.configure('production', function(){
 
 var PORT = 3000;
 var _id_ = 0;
-var getUID = function() { return _id_++; };
+var getUID = function() { return (_id_++).toString(); };
 
-var Piece = function(x, y) {
+var Piece = function(snakeGame, x, y) {
     this.id = getUID();
+    this.snakeGame = snakeGame;
     this.x = x;
     this.y = y;
+
+    var self = this;
+
+    this.update = function() {
+        this.snakeGame.socket.emit('piece::update', this.id.toString());
+    };
+    this.disappear = function() {
+        this.snakeGame.socket.emit('piece::disappear', this.id.toString());
+    };
 };
+
 var User = function(socket, isSnake) {
     this.socket = socket;
     this.id = getUID();
     if (isSnake)
         this.isSnake = true;
+    this.pieces = [];
+    var self = this;
+
+    this.disappear = function() {
+        while (self.pieces.length > 0) {
+            p.disappear();
+            var p = self.pieces.pop();
+        }
+    };
+
 };
+
 var SnakeGame = function(width, height) {
 
     this.width = width;
     this.height = height;
 
-    this.snakePieces = [ new Piece(3,3), new Piece(4,3), new Piece(5,3) ];
+    this.snakePieces = [new Piece(this, 3,3), new Piece(this, 4,3), new Piece(this, 5,3)];
 
     // When snakeUser is null, the game has not yet started and is waiting for a snake to connect.
     this.snakeUser = null;
@@ -64,10 +86,21 @@ var SnakeGame = function(width, height) {
                 // create a snakeUser and bind to self.snakeUser
                 self.snakeUser = new User(socket, true);
                 socket.emit('init', 'snake');
+                socket.on('disconnect', function() {
+                    // game over
+                    process.exit(0);
+                });
             } else {
                 // create a foodUser and push onto self.foodUsers
-                self.foodUsers.push(new User(socket));
+                var user = new User(socket);
+                self.foodUsers.push();
                 socket.emit('init', 'food');
+                socket.on('disconnect', function() {
+                    user.disappear();
+                    // remove the user from the list of users.
+                    var index = array.indexOf(user);
+                    array.splice(index, 1);
+                });
             }
             /** examples for reference
             socket.emit('news', { hello: 'world' });
