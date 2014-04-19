@@ -71,8 +71,15 @@ var User = function(snakeGame, socket) {
     this.socket = socket;
     this.id = getUID();
 
-    this.piece = new Piece(snakeGame, 5, 5, 'food');
+    do {
+        newPieceX = Math.floor((Math.random()*this.snakeGame.width));
+        newPieceY = Math.floor((Math.random()*this.snakeGame.height));
+        console.log(newPieceX);
+        console.log('********');
+    }
+    while (this.snakeGame.getPieceAtCoord(newPieceX, newPieceY));
 
+    this.piece = new Piece(snakeGame, newPieceX, newPieceY, 'food');
     this.piece.update();
 
     var self = this;
@@ -261,7 +268,7 @@ var SnakeGame = function(width, height) {
                 socket.emit('init', 'snake');
 
                 self.snakeUser.setupSocketBindings(socket);
-                self.snakeUser.startSnakeLoop(250);
+                self.snakeUser.startSnakeLoop(200);
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
