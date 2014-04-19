@@ -17,26 +17,13 @@ var setupKeyBindings = function (socket) {
 
 };
 
-var buildBoard = function() {
-    var PIECESIZE = 20;
-    var PIECESIZEPX = '20px';
-
-    var x = $(document).width();
-    var y = $(document).height();
-
-    var my = 100;
-    var mx = 100;
-
-    var numRows = Math.floor((y - my) / PIECESIZE);
-    var numCols = Math.floor((x - mx) / PIECESIZE);
-
-    var boardx = 1 + numCols * PIECESIZE;
-    var boardy = 1 + numRows * PIECESIZE;
-
-
+var buildBoard = function(numRows, numCols) {
 
     $('body').append('<link rel="stylesheet" type="text/css" href="/stylesheets/snake.css">');
     $('body').append('<div id="board"></div>');
+
+    var boardx = 1 + numCols * PIECESIZE;
+    var boardy = 1 + numRows * PIECESIZE;
 
 
 
@@ -50,33 +37,58 @@ var buildBoard = function() {
     for (var i = 0; i < numRows; i ++) {
         drawRow(i, numCols);
     }
+
+
     $('.piece').css('width', PIECESIZEPX).css('height', PIECESIZEPX);
     $('#board').css('width', boardx + 'px').css('height', boardy + 'px');
-
-
+    
 };
 
 
 var start = function(socket) {
-    alert('loaded snake');
+    //build board
+    PIECESIZE = 20;
+    PIECESIZEPX = '20px';
+
+    var x = $(document).width();
+    var y = $(document).height();
+
+
+    var my = 99;
+    var mx = 99;
+
+    var numRows = Math.floor((y - my) / PIECESIZE);
+    var numCols = Math.floor((x - mx) / PIECESIZE);
+
+    socket.emit('snake::setBoardSize', {width:numCols, height:numRows});
     setupKeyBindings(socket);
-    buildBoard();
+    buildBoard(numRows, numCols);
+
+
+    socket.on('piece::update', function(pieceJSON) {
+        //get piece
+        console.log(pieceJSON)
+        piece = $('#piece-'+pieceJSON.y+'-'+pieceJSON.x);
+        if (!piece)
+            console.log('THIS IS VERY BAD -> Could not find the piece');
+        //change piece's attributes according to the JSON
+        if (pieceJSON.type === 'food')
+            piece.css('background-color', 'green');
+        else
+            piece.css('background-color', 'blue');
+
+    });
+
+    socket.on('piece::disappear', function(pieceJSON) {
+        console.log(pieceJSON);
+        $('#piece-'+pieceJSON.y+'-'+pieceJSON.x).css('background-color', 'white');
+    });
+
+    socket.on('disconnect', function() {
+        window.close();
+    });
+
 };
 
-socket.on('piece::update', function(pieceJSON) {
-    //get piece
-    console.log(pieceJSON)
-    piece = $('#piece-'+pieceJSON['y']+'-'+pieceJSON['x']);
-    if (!piece)
-        console.log('THIS IS VERY BAD -> Could not find the piece');
-    //change piece's attributes according to the JSON
-    piece.css('background-color', 'blue');
-
-});
-
-socket.on('piece::disappear', function(pieceJSON) {
-    console.log(pieceJSON);
-    $('#piece-'+pieceJSON['y']+'-'+pieceJSON['x']).css('background-color', 'white');
-});
 
 
