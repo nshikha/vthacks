@@ -23,7 +23,7 @@ var buildBoard = function(numRows, numCols) {
     $('body').append('<div id="board"></div>');
 
     var boardx = 1 + numCols * PIECESIZE;
-    var boardy = 1 + numRows * PIECESIZE;
+    var boardy = numRows * PIECESIZE;
 
 
 
@@ -54,8 +54,8 @@ var start = function(socket) {
     var y = $(document).height();
 
 
-    var my = 99;
-    var mx = 99;
+    var my = 100;
+    var mx = 100;
 
     var numRows = Math.floor((y - my) / PIECESIZE);
     var numCols = Math.floor((x - mx) / PIECESIZE);
