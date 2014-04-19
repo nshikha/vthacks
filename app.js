@@ -46,13 +46,26 @@ var Piece = function(snakeGame, x, y) {
     };
 };
 
-var User = function(socket, isSnake) {
+var User = function(snakeGame, socket, isSnake) {
+    this.snakeGame = snakeGame;
     this.socket = socket;
     this.id = getUID();
     if (isSnake)
         this.isSnake = true;
     this.pieces = [];
     var self = this;
+
+    this.setupSocketBindings = function() {
+        self.socket.on('controller::data', function(input) {
+        });
+
+        self.socket.on('disconnect', function() {
+            this.disappear();
+            // remove the user from the list of users.
+            var index = self.snakeGame.foodUsers.indexOf(user);
+            self.snakeGame.foodUsers.splice(index, 1);
+        });
+    };
 
     this.disappear = function() {
         while (self.pieces.length > 0) {
@@ -84,7 +97,7 @@ var SnakeGame = function(width, height) {
         self.io.sockets.on('connection', function (socket) {
             if (!self.hasStarted()) {
                 // create a snakeUser and bind to self.snakeUser
-                self.snakeUser = new User(socket, true);
+                self.snakeUser = new User(self, socket, true);
                 socket.emit('init', 'snake');
                 socket.on('disconnect', function() {
                     // game over
@@ -92,15 +105,11 @@ var SnakeGame = function(width, height) {
                 });
             } else {
                 // create a foodUser and push onto self.foodUsers
-                var user = new User(socket);
+                var user = new User(self, socket);
                 self.foodUsers.push();
                 socket.emit('init', 'food');
-                socket.on('disconnect', function() {
-                    user.disappear();
-                    // remove the user from the list of users.
-                    var index = array.indexOf(user);
-                    array.splice(index, 1);
-                });
+                user.setupSocketBindings();
+
             }
             /** examples for reference
             socket.emit('news', { hello: 'world' });
