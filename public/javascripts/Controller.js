@@ -159,12 +159,13 @@ var start = function(socket) {
     return [x,y];
   }
 
+  //reversed form usual since +Y points downwards
   function getDirection(x, y){
     if ( x + y > 0 && x-y > 0) {
-      return "up";
+      return "down";
     }
     else if (x+y < 0 and x-y > 0) {
-      return "down";
+      return "up";
     }
     else if (x+y < 0 and x-y < 0) {
       return "left";
