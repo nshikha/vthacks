@@ -62,11 +62,11 @@ var SnakeGame = function(width, height) {
         self.io.sockets.on('connection', function (socket) {
             if (!self.hasStarted()) {
                 // create a snakeUser and bind to self.snakeUser
-                this.snakeUser = new User(socket, true);
+                self.snakeUser = new User(socket, true);
                 socket.emit('init', 'snake');
             } else {
                 // create a foodUser and push onto self.foodUsers
-                this.foodUsers.push(new User(socket));
+                self.foodUsers.push(new User(socket));
                 socket.emit('init', 'food');
             }
             /** examples for reference
