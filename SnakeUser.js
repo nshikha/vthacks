@@ -86,6 +86,7 @@ var SnakeUser = function(snakeGame, socket) {
                 // if food is there, then snake gets longer (doesnt get shorter), food isEaten
                 console.log('eatingfood');
                 anticipatedPiece.disappear();
+                self.socket.emit('snake::ateFood', null);
                 anticipatedPiece._user.die();
             }
         } else {

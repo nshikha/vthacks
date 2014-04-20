@@ -114,6 +114,10 @@ var startSnake = function(socket) {
         $piece.text('');
     });
 
+    socket.on('snake::ateFood', function() {
+        document.getElementById('snakesound').play();
+    });
+
     socket.on('disconnect', function() {
         window.close();
     });
