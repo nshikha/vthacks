@@ -61,7 +61,7 @@ var User = function(snakeGame, socket) {
 
     this.die = function() {
         self.socket.emit('controller::loseGame', null);
-        self.snakeGame.deregisterUser(anticipatedPiece._user);
+        self.snakeGame.deregisterUser(self);
     };
 
     this.setupSocketBindings = function() {
