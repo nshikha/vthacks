@@ -109,7 +109,9 @@ var startSnake = function(socket) {
     //set back to normal tile mode
     socket.on('piece::disappear', function(pieceJSON) {
         console.log(pieceJSON);
-        $('#piece-'+pieceJSON.y+'-'+pieceJSON.x).css('background-color', 'rgba(221,221,221,0.4)');
+        var $piece = $('#piece-'+pieceJSON.y+'-'+pieceJSON.x);
+        $piece.css('background-color', 'rgba(221,221,221,0.4)');
+        $piece.text('');
     });
 
     socket.on('disconnect', function() {
