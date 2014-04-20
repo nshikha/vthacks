@@ -9,11 +9,13 @@ var Piece = function(snakeGame, x, y, type) {
     this.y = y;
     this.type = type;
 
-    this.colorA = COLORS[Math.floor((Math.random()*COLORS.length)-1)];
+    this.colorA = COLORS[Math.floor(Math.random() * COLORS.length)];
+
+
     if (this.type == 'snake')
         this.colorB = null;
     else
-        this.colorB = LETTERS[Math.floor((Math.random()*LETTERS.length)-1)];
+        this.colorB = LETTERS[Math.floor(Math.random() * LETTERS.length)];
 
     var self = this;
 
@@ -24,7 +26,7 @@ var Piece = function(snakeGame, x, y, type) {
         return { id: self.id.toString(),
             x: self.x,
             y: self.y , 
-            type: self.type, 
+            type: self.type,
             colorA: self.colorA,
             colorB: self.colorB
         };
