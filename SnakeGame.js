@@ -39,6 +39,11 @@ var SnakeGame = function(width, height) {
 
                 self.snakeUser.setupSocketBindings();
 
+                socket.on('disconnect', function() {
+                    self.snakeUser.disappear();
+                    self.deregisterSnake();
+                });
+
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
@@ -47,6 +52,7 @@ var SnakeGame = function(width, height) {
                 user.setupSocketBindings();
 
                 socket.on('disconnect', function() {
+                    user.piece.disappear();
                     self.deregisterUser(user);
                 });
             }

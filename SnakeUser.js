@@ -35,15 +35,8 @@ var SnakeUser = function(snakeGame, socket) {
         });
 
         self.socket.on('snake::setBoardSize', function(wh) {
-            if (!self.snakeGame.width) {
-                self.snakeGame.width = wh.width;
-                self.snakeGame.height = wh.height;
-            }
-        });
-
-        self.socket.on('disconnect', function() {
-            self.disappear();
-            self.snakeGame.deregisterSnake();
+            self.snakeGame.width = wh.width;
+            self.snakeGame.height = wh.height;
         });
     };
 
