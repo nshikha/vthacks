@@ -27,7 +27,7 @@ app.configure('production', function(){
   app.use(express.errorHandler());
 });
 
-var PORT = 3000;
+var PORT = parseInt(process.argv[2]) || 3000;
 
 
 // Routes
