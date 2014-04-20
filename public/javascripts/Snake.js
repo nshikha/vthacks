@@ -118,6 +118,10 @@ var startSnake = function(socket) {
         document.getElementById('snakesound').play();
     });
 
+    socket.on('snake::loseGame', function() {
+        document.getElementById('snakedeathsound').play();
+    });
+
     socket.on('disconnect', function() {
         window.close();
     });
