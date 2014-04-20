@@ -8,7 +8,6 @@
     margin: 0;
 }
 
-
 /*pieces at bottom without border */
 .row:last-child .piece {
     border-bottom: 0;

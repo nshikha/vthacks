@@ -1,4 +1,6 @@
 var getUID = require('./util').getUID;
+var COLORS = require('./util').COLORS;
+var LETTERS = require('./util').ALPHABET;
 
 var Piece = function(snakeGame, x, y, type) {
     this.id = getUID();
@@ -6,6 +8,12 @@ var Piece = function(snakeGame, x, y, type) {
     this.x = x;
     this.y = y;
     this.type = type;
+
+    this.colorA = COLORS[Math.floor((Math.random()*COLORS.length)-1)];
+    if (this.type == 'snake')
+        this.colorB = null;
+    else
+        this.colorB = LETTERS[Math.floor((Math.random()*LETTERS.length)-1)];
 
     var self = this;
 
@@ -16,7 +24,10 @@ var Piece = function(snakeGame, x, y, type) {
         return { id: self.id.toString(),
             x: self.x,
             y: self.y , 
-            type: self.type};
+            type: self.type, 
+            colorA: self.colorA,
+            colorB: self.colorB
+        };
 
     };
 
