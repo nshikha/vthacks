@@ -15,9 +15,6 @@ var SnakeGame = function(width, height) {
 
     var self = this;
 
-    this.hasStarted = function() {
-        return self.snakeUser !== null;
-    };
 
     this.coordOutOfBounds = function(x, y) {
         return (x < 0) || (x >= self.width) ||
@@ -35,14 +32,13 @@ var SnakeGame = function(width, height) {
 
     this.setupIO = function() {
         self.io.sockets.on('connection', function (socket) {
-            if (!self.hasStarted()) {
+            if (self.snakeUser === null) {
                 // create a snakeUser and bind to self.snakeUser
                 self.snakeUser = new SnakeUser(self, socket, true);
                 socket.emit('init', 'snake');
 
                 self.snakeUser.setupSocketBindings();
 
-                self.startSnakeLoop(200);
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
@@ -64,6 +60,12 @@ var SnakeGame = function(width, height) {
             self.foodUsers.splice(index, 1);
     }
 
+    this.deregisterSnake = function() {
+        if (self.snakeUser) {
+            self.snakeUser = null;
+        }
+    };
+
     this.foodLoopIter = function() {
         _.each(self.foodUsers, function(user) {
             user.advance();
@@ -72,7 +74,8 @@ var SnakeGame = function(width, height) {
 
     this.snakeLoopIter = function() {
         var snakeUser = this.snakeUser;
-        snakeUser.advance();
+        if (snakeUser)
+            snakeUser.advance();
     };
 
     this.alive = true;
@@ -95,6 +98,7 @@ var SnakeGame = function(width, height) {
     this.serve = function(app) {
         self.io = require('socket.io').listen(app);
         self.setupIO();
+        self.startSnakeLoop(200);
     };
 };
 module.exports = SnakeGame;

@@ -38,8 +38,8 @@ var SnakeUser = function(snakeGame, socket) {
         });
 
         self.socket.on('disconnect', function() {
-            // game over
-            process.exit(0);
+            self.disappear();
+            self.snakeGame.deregisterSnake();
         });
     };
 
@@ -99,11 +99,10 @@ var SnakeUser = function(snakeGame, socket) {
         this.lastDirection = self.direction; //cache last moved direction to avoid collissions.
     };
 
-    // TODO NYI
     this.disappear = function() {
         while (self.snakePieces.length > 0) {
-            p.disappear();
             var p = self.snakePieces.pop();
+            p.disappear();
         }
     };
 
