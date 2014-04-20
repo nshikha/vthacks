@@ -99,9 +99,10 @@ var SnakeUser = function(snakeGame, socket) {
     };
 
     this.die = function() {
-        self.socket.emit('controller::loseGame', null);
+        self.socket.emit('snake::loseGame', null);
         self.disappear();
         self.snakeGame.deregisterSnake(self);
+        self.snakeGame.startSnakeWithSocket(self.socket);
     };
 
     this.disappear = function() {

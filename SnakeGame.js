@@ -30,14 +30,17 @@ var SnakeGame = function(width, height) {
         return null;
     };
 
+    this.startSnakeWithSocket = function(socket) {
+        self.snakeUser = new SnakeUser(self, socket, true);
+        self.snakeUser.setupSocketBindings();
+    };
+
     this.setupIO = function() {
         self.io.sockets.on('connection', function (socket) {
             if (self.snakeUser === null) {
                 // create a snakeUser and bind to self.snakeUser
-                self.snakeUser = new SnakeUser(self, socket, true);
                 socket.emit('init', 'snake');
-
-                self.snakeUser.setupSocketBindings();
+                self.startSnakeWithSocket(socket);
 
                 socket.on('disconnect', function() {
                     if (self.snakeUser)
