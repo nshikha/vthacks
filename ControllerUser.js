@@ -9,8 +9,6 @@ var User = function(snakeGame, socket) {
     do {
         newPieceX = Math.floor((Math.random()*this.snakeGame.width));
         newPieceY = Math.floor((Math.random()*this.snakeGame.height));
-        console.log(newPieceX);
-        console.log('********');
     }
     while (this.snakeGame.getPieceAtCoord(newPieceX, newPieceY));
 
@@ -31,7 +29,7 @@ var User = function(snakeGame, socket) {
             self.diagState %= 2;
             return dir;
         } else
-            return 't';
+            return 'null';
     };
 
     this.advance = function () {
