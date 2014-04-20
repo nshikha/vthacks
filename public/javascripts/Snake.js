@@ -98,12 +98,9 @@ var startSnake = function(socket) {
             console.log('THIS IS VERY BAD -> Could not find the piece, when we just created it.');
         }
         //change piece's attributes according to the JSON
+        $piece.css('background-color', piece.colorA);
         if (piece.type === 'food'){
-            console.log(piece.colorA + 'Cant get access  to piece');
-            $piece.css('background-color', piece.colorA); //Food
-        }
-        else{
-            $piece.css('background-color', piece.colorA); //Snake -> Dark slate
+            $piece.text(piece.colorB);
         }
 
     });
