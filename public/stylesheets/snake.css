@@ -1,24 +1,24 @@
 .piece {
-    border: 1px solid grey;
+    border: 1px solid white;
     border-right: 0;
     border-top: 0;
-
+    background-color: #dddddd;
     display: inline-block;
     -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
     margin: 0;
 }
 /*pieces on the top should have top border*/
 .row:first-child .piece {
-    border-top: 1px solid grey;
+    border-top: 1px solid white;
     -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
 }
 
 .row .piece:first-child {
-    border-left: 1px solid grey;
+    border-left: 1px solid white;
     -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
 }
 .row .piece:last-child {
-    border-right: 1px solid grey;
+    border-right: 1px solid white;
     -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
 }
 
