@@ -94,7 +94,7 @@ var startSnake = function(socket) {
             $piece.css('background-color', color); //Food
         }
         else{
-            $piece.css('background-color', '#222222'); //Snake -> Dark slate
+            $piece.css('background-color', piece.colorA); //Snake -> Dark slate
         }
 
     });
@@ -102,7 +102,7 @@ var startSnake = function(socket) {
     //set back to normal tile mode
     socket.on('piece::disappear', function(pieceJSON) {
         console.log(pieceJSON);
-        $('#piece-'+pieceJSON.y+'-'+pieceJSON.x).css('background-color', "rgba(221,221,221,0.4)");
+        $('#piece-'+pieceJSON.y+'-'+pieceJSON.x).css('background-color', 'rgba(221,221,221,0.4)');
     });
 
     socket.on('disconnect', function() {
