@@ -1,4 +1,4 @@
-var start = function(socket) {
+var startController = function(socket) {
 
   $('body').append('<link rel="stylesheet" type="text/css" href="/stylesheets/controller.css">');
   $('#userCanvas').css('display', 'block');

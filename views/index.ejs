@@ -8,6 +8,8 @@
   content="width=device-width, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <script src="/config.js"></script>
+<script src="/javascripts/Snake.js"></script>
+<script src="/javascripts/Controller.js"></script>
 <script>
 $(document).ready(function() {
   window.onerror = function(message, url, linenumber) {
@@ -16,12 +18,12 @@ $(document).ready(function() {
   var socket = io.connect('/');
   socket.on('init', function (data) {
     if (data === 'snake') {
-        $('body').append('<script src="/javascripts/Snake.js"><'+'/script>');
+        startSnake(socket);
     } else {
-        $('body').append('<script src="/javascripts/Controller.js"><'+'/script>');
+        startController(socket);
     }
-    start(socket);
   });
 });
 
 </script>
+
