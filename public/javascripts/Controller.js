@@ -171,14 +171,28 @@ var startController = function(socket) {
     function getDirection(x, y){
         if (x === 0 && y === 0)
             return null;
-        if ( x + y >= 0 && x-y >= 0) {
-            return "r";
-        } else if (x+y < 0 && x-y >= 0) {
-            return "u";
-        } else if (x+y < 0 && x-y < 0) {
-            return "l";
-        } else {
-            return "d";
+        if (y === 0) {
+            if (x > 0) return "r";
+            else return "l";
+        }
+
+        var ratio = x / y;
+
+        if (-2.0 < ratio && ratio <= -0.5) {
+            if (y > 0) return 'dl';
+            else return 'ur';
+        }
+        if (-0.5 < ratio && ratio <= 0.5) {
+            if (y > 0) return 'd';
+            else return 'u';
+        }
+        if (0.5 < ratio && ratio <= 2.0) {
+            if (y > 0) return 'dr';
+            else return 'ul';
+        }
+        if (2.0 < ratio || ratio <= -2.0) {
+            if (x > 0) return 'r';
+            else return 'l';
         }
     }
 
