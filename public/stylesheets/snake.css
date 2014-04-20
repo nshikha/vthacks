@@ -14,14 +14,11 @@
     border-bottom: 0;
 }
 
+/* left should be 0 */
 .row .piece:first-child {
     border-left: 0;
 }
 
-/*right */
-.row .piece:last-child {
-
-}
 
 .row {
     margin: 0;

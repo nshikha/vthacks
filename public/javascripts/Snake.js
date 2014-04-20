@@ -49,6 +49,8 @@ var startSnake = function(socket) {
     //build board
     PIECESIZE = 20;
     PIECESIZEPX = '20px';
+    // light blue // light green // light purple // orange // light red/pink // yellow //  brown
+    var COLORS=['#007fff', '#3fb618', '#9954bb', '#ff7518', '#ff0039', '#debb27', '#ad1d28', '#7a5230'];
 
     var x = $(document).width();
     var y = $(document).height();
@@ -68,7 +70,7 @@ var startSnake = function(socket) {
 
     socket.on('piece::update', function(pieceJSON) {
         //get piece
-        console.log(pieceJSON)
+        console.log(pieceJSON);
 
         var piece = pieces[pieceJSON.id];
         if (piece) {
@@ -84,13 +86,17 @@ var startSnake = function(socket) {
 
 
         var $piece = $('#piece-'+piece.y+'-'+piece.x);
-        if (!$piece)
+        if (!$piece){
             console.log('THIS IS VERY BAD -> Could not find the piece');
+        }
         //change piece's attributes according to the JSON
-        if (piece.type === 'food')
-            $piece.css('background-color', 'green');
-        else
-            $piece.css('background-color', 'blue');
+        if (piece.type === 'food'){
+            var color = COLORS[Math.floor((Math.random()*COLORS.length)-1)];
+            $piece.css('background-color', color); //Food
+        }
+        else{
+            $piece.css('background-color', '#222222'); //Snake -> Dark slate
+        }
 
     });
 
