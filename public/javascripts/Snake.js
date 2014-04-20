@@ -75,6 +75,7 @@ var startSnake = function(socket) {
 
             //get old piece -> re paint the previous spot.
             var $oldpiece = $('#piece-'+piece.y+'-'+piece.x);
+            $oldpiece.text('');
             $oldpiece.css('background-color', 'rgba(221,221,221,0.4)');
 
             //update our attribs in new model
