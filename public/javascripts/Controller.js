@@ -99,6 +99,7 @@ var startController = function(socket) {
   }
   
   function mouseUpListener(evt) {
+    window.console.log(dragging);
     if (dragging) {
       dragging = false;
       position.x = canvas.width/2;
@@ -136,28 +137,31 @@ var startController = function(socket) {
   }
 
   function mouseMoveListener(evt) {
-    var posX;
-    var posY;
-    var minX = radius;
-    var maxX = canvas.width - radius;
-    var minY = radius;
-    var maxY = canvas.height - radius;
-    //getting mouse position correctly 
-    var bRect = canvas.getBoundingClientRect();
-    mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
-    mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
-    
-    //clamp x and y positions to prevent object from dragging outside of canvas
-    posX = mouseX - dragHoldX;
-    posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
-    posY = mouseY - dragHoldY;
-    posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
+    if (dragging) {
+      var posX;
+      var posY;
+      var minX = radius;
+      var maxX = canvas.width - radius;
+      var minY = radius;
+      var maxY = canvas.height - radius;
+      //getting mouse position correctly 
+      var bRect = canvas.getBoundingClientRect();
+      mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
+      mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
+      
+      //clamp x and y positions to prevent object from dragging outside of canvas
+      posX = mouseX - dragHoldX;
+      posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
+      posY = mouseY - dragHoldY;
+      posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
 
-    position.x = posX;
-    position.y = posY;
-    //setPositions(posX, posY);
+      position.x = posX;
+      position.y = posY;
+      //setPositions(posX, posY);
 
-    drawScreen();
+      drawScreen();
+    }
+
   }
 
   //translated direction
