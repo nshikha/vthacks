@@ -84,13 +84,39 @@ var User = function(snakeGame, socket) {
 
     var self = this;
 
-    this.setupSocketBindings = function(socket) {
+    this._tmpdir = null; // null is no dir
+    this.getNextDirection = function() {
+        return self._tmpdir;
+    };
+
+    this.setupSocketBindings = function() {
         self.socket.on('controller::data', function(input) {
             if (self.piece.isEaten) {
                 // user moved eaten food
                 console.log('ignoring because eaten');
             } else {
+                console.log('controller');
+                console.log(input);
                 // move self.piece and update
+                var dx = input[0];
+                var dy = input[1];
+
+
+                //reversed form usual since +Y points downwards
+                function getDirection(x, y){
+                    if (x === 0 && y === 0)
+                        return null;
+                    if ( x + y >= 0 && x-y >= 0) {
+                        return "d";
+                    } else if (x+y < 0 && x-y >= 0) {
+                        return "u";
+                    } else if (x+y < 0 && x-y < 0) {
+                        return "l";
+                    } else {
+                        return "r";
+                    }
+                }
+                self._tmpdir = getDirection(dx, dy);
             }
         });
 
@@ -125,11 +151,11 @@ var SnakeUser = function(snakeGame, socket) {
 
     var self = this;
 
-    this.setupSocketBindings = function(socket) {
+    this.setupSocketBindings = function() {
         _.each(self.snakePieces, function(p) {
             p.update();
         });
-        socket.on('snake::changeDirection', function(input) {
+        self.socket.on('snake::changeDirection', function(input) {
             if (self.alive) {
                 // assert input is one of ['l', 'r', 'u', 'd']
                 var oppDirs = {'l':'r', 'r':'l', 'u':'d', 'd': 'u'};
@@ -141,19 +167,53 @@ var SnakeUser = function(snakeGame, socket) {
             }
         });
 
-        socket.on('snake::setBoardSize', function(wh) {
+        self.socket.on('snake::setBoardSize', function(wh) {
             self.snakeGame.width = wh.width;
             self.snakeGame.height = wh.height;
         });
 
-        socket.on('disconnect', function() {
+        self.socket.on('disconnect', function() {
             // game over
             process.exit(0);
         });
     };
 
+    this.foodLoopIter = function() {
+        _.each(self.foodUsers, function(user) {
+            var direction = user.getNextDirection();
+            if (direction === null)
+                return;
+            var newx = user.piece.x,
+                newy = user.piece.y;
+            if (direction === 'l')
+                newx --;
+            if (direction === 'r')
+                newx ++;
+            if (direction === 'u')
+                newy --;
+            if (direction === 'd')
+                newy ++;
+            // if boundary, then NOOP
+            if (self.snakeGame.coordOutOfBounds(newx, newy)) {
+                console.log('food outofbounds');
+                return;
+            }
+
+            // get the piece at the anticipated spot
+            var anticipatedPiece = self.snakeGame.getPieceAtCoord(newx, newy);
+            if (anticipatedPiece) {
+                console.log('food cant move there');
+                return;
+            }
+
+            user.piece.x = newx;
+            user.piece.y = newy;
+            user.piece.update();
+
+        });
+    };
+
     this.snakeLoopIter = function() {
-            self.die();
         var head = self.snakePieces[0];
         var newx = head.x, newy = head.y;
         if (self.direction === 'l')
@@ -213,11 +273,16 @@ var SnakeUser = function(snakeGame, socket) {
         self.loopid = setInterval(function() {
             if (self.alive) self.snakeLoopIter();
         }, delay);
+
+        self.foodloopid = setInterval(function() {
+            if (self.alive) self.foodLoopIter();
+        }, delay);
     };
 
     this.die = function () {
         self.alive = false;
         clearInterval(self.loopid);
+        clearInterval(self.foodloopid);
     }
 
     this.disappear = function() {
@@ -267,14 +332,14 @@ var SnakeGame = function(width, height) {
                 self.snakeUser = new SnakeUser(self, socket, true);
                 socket.emit('init', 'snake');
 
-                self.snakeUser.setupSocketBindings(socket);
+                self.snakeUser.setupSocketBindings();
                 self.snakeUser.startSnakeLoop(200);
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
                 self.foodUsers.push(user);
                 socket.emit('init', 'food');
-                user.setupSocketBindings(socket);
+                user.setupSocketBindings();
             }
         });
     };

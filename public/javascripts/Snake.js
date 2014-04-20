@@ -45,7 +45,7 @@ var buildBoard = function(numRows, numCols) {
 };
 
 
-var start = function(socket) {
+var startSnake = function(socket) {
     //build board
     PIECESIZE = 20;
     PIECESIZEPX = '20px';

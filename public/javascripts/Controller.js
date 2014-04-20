@@ -1,14 +1,9 @@
-var start = function(socket) {
+var startController = function(socket) {
 
   $('body').append('<link rel="stylesheet" type="text/css" href="/stylesheets/controller.css">');
   $('#userCanvas').css('display', 'block');
 
   window.addEventListener('deviceorientation', resetCanvas, false);
-
-  var timeInterval = 250;
-  setInterval(function(){
-    socket.emit('position', sendDirection()); 
-  }, timeInterval);
 
   document.body.addEventListener('touchmove', function(event) {
     event.preventDefault();
@@ -38,6 +33,13 @@ var start = function(socket) {
     canvas.addEventListener("touchstart", touchDownListener, false);
     canvas.addEventListener("touchmove", touchMoveListener, false);
     canvas.addEventListener("touchend", touchEndListener, false);
+
+    var timeInterval = 250;
+    setInterval(function(){
+        console.log('hi');
+        console.log(sendDirection());
+      socket.emit('controller::data', sendDirection());
+    }, timeInterval);
   }
 
   function resetCanvas() {
@@ -163,22 +165,6 @@ var start = function(socket) {
     var x = position.x - (canvas.width/2);
     var y = position.y - (canvas.height/2);
     return [x,y];
-  }
-
-  //reversed form usual since +Y points downwards
-  function getDirection(x, y){
-    if ( x + y > 0 && x-y > 0) {
-      return "down";
-    }
-    else if (x+y < 0 && x-y > 0) {
-      return "up";
-    }
-    else if (x+y < 0 && x-y < 0) {
-      return "left";
-    }
-    else {
-      return "right";
-    }
   }
   
   function hitTest(px, py) {
