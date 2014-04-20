@@ -104,6 +104,8 @@ var startSnake = function(socket) {
         else{
             console.log('**** NOT GOOD CODE HERE *****'+ ' Cant get access to piece ');
             $piece.css('background-color', piece.colorA); //Snake -> Dark slate
+
+            // $piece.css('background-color', '#222222'); //Snake -> Dark slate
         }
 
     });

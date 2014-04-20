@@ -12,6 +12,7 @@ var startController = function(socket) {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   var radius = 40; 
+  var outerRadius = (canvas.width/2) - 10;
 
   var dragging = false;
   var position = {x: canvas.width/2, y:canvas.height/2};
@@ -32,7 +33,8 @@ var startController = function(socket) {
     canvas.addEventListener("touchend", touchEndListener, false);
 
     var timeInterval = 250;
-    var lastDirection = null
+    var lastDirection = null;
+
     setInterval(function(){
       socket.emit('controller::data', sendDirection());
       var direction = sendDirection();
@@ -46,7 +48,16 @@ var startController = function(socket) {
 
   function drawScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawOuterBounds();
     drawCircle(ctx, position.x, position.y, radius);
+  }
+
+
+  function drawOuterBounds() {
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.arc(canvas.width/2, canvas.height/2, outerRadius, 0, 2*Math.PI, true);
+    ctx.stroke();
   }
 
   function drawCircle(ctx, cx, cy, radius) {
@@ -69,7 +80,7 @@ var startController = function(socket) {
       var touchY = touch.pageY;
     }
     
-    if (hitTest(touchX, touchY)) {
+    if (hitTest(touchX, touchY, radius)) {
       dragging = true;
       dragHoldX = touchX - position.x;
       dragHoldY = touchY - position.y;
@@ -83,7 +94,7 @@ var startController = function(socket) {
     var mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
     var mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
-    if (hitTest(mouseX, mouseY)) {
+    if (hitTest(mouseX, mouseY, radius)) {
       dragging = true;
       dragHoldX = mouseX - position.x;
       dragHoldY = mouseY - position.y;
@@ -125,11 +136,12 @@ var startController = function(socket) {
     posX = touchX - dragHoldX;
     posY = touchY - dragHoldY;
       //clamp x and y positions to prevent object from dragging outside of canvas
-    if (posX < minX || posX > maxX || posY < minY || posY > maxY) {
+    if (!withinBounds(posX, posY, outerRadius)) {
         posX = canvas.width/2;
         posY = canvas.height/2;
         dragging = false;
     }
+
 
     position.x = posX;
     position.y = posY;
@@ -153,7 +165,7 @@ var startController = function(socket) {
       posX = mouseX - dragHoldX;
       posY = mouseY - dragHoldY;
       //clamp x and y positions to prevent object from dragging outside of canvas
-      if (posX < minX || posX > maxX || posY < minY || posY > maxY) {
+      if (!withinBounds(posX, posY, outerRadius)) {
         posX = canvas.width/2;
         posY = canvas.height/2;
         dragging = false;
@@ -203,10 +215,17 @@ var startController = function(socket) {
     return getDirection(x, y);
   }
 
-  function hitTest(px, py) {
+  function withinBounds(px, py, r) {
+    var dx = px - canvas.width/2;
+    var dy = py - canvas.height/2;
+    var diff = (dx*dx + dy*dy) - (r*r);
+    return (diff < 0);
+  }
+
+  function hitTest(px, py, r) {
     var dx = px - position.x;
     var dy = py - position.y;
-    var diff = (dx*dx + dy*dy) - (radius*radius);
+    var diff = (dx*dx + dy*dy) - (r*r);
     return (diff < 0);
   }
 
