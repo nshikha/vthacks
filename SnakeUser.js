@@ -11,6 +11,8 @@ var SnakeUser = function(snakeGame, socket) {
     this.snakePieces = [new Piece(snakeGame, 3, 5, 'snake'),
                        new Piece(snakeGame, 3, 4, 'snake'),
                        new Piece(snakeGame, 3, 3, 'snake')];
+    this.snakePieces[1].colorA = this.snakePieces[0].colorA;
+    this.snakePieces[2].colorA = this.snakePieces[0].colorA;
 
 
     this.lastDirection = '';
@@ -33,8 +35,10 @@ var SnakeUser = function(snakeGame, socket) {
         });
 
         self.socket.on('snake::setBoardSize', function(wh) {
-            self.snakeGame.width = wh.width;
-            self.snakeGame.height = wh.height;
+            if (!self.snakeGame.width) {
+                self.snakeGame.width = wh.width;
+                self.snakeGame.height = wh.height;
+            }
         });
 
         self.socket.on('disconnect', function() {
@@ -90,6 +94,7 @@ var SnakeUser = function(snakeGame, socket) {
         }
 
         newP = new Piece(self.snakeGame, newx, newy, 'snake');
+        newP.colorA = head.colorA;
 
         newP.update();
         console.log('move is clear');

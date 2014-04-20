@@ -23,6 +23,28 @@ var startController = function(socket) {
 
   init();
 
+  function setupTester (timeInterval) {
+    var optionsVar = [null, 'l', 'ul', 'u', 'ur', 'r', 'dr', 'd', 'dl'];
+
+    setInterval(function(){
+      var direction = optionsVar[Math.floor(Math.random()*optionsVar.length)];
+      socket.emit('controller::data', direction);
+    }, timeInterval);
+  };
+
+  function setupDataEmitter (timeInterval) {
+        var lastDirection = null;
+
+        setInterval(function(){
+          socket.emit('controller::data', sendDirection());
+          var direction = sendDirection();
+          if (direction !== lastDirection) {
+              socket.emit('controller::data', direction);
+              lastDirection = direction;
+          }
+        }, timeInterval);
+  };
+
   function init() {
     drawScreen();
     canvas.addEventListener("mousedown", mouseDownListener, false);
@@ -33,16 +55,12 @@ var startController = function(socket) {
     canvas.addEventListener("touchend", touchEndListener, false);
 
     var timeInterval = 250;
-    var lastDirection = null;
 
-    setInterval(function(){
-      socket.emit('controller::data', sendDirection());
-      var direction = sendDirection();
-      if (direction !== lastDirection) {
-          socket.emit('controller::data', direction);
-          lastDirection = direction;
-      }
-    }, timeInterval);
+
+    //setupDataEmitter(timeInterval);
+    setupTester(timeInterval);
+
+
   }
 
 
