@@ -3,8 +3,6 @@ var startController = function(socket) {
   $('body').append('<link rel="stylesheet" type="text/css" href="/stylesheets/controller.css">');
   $('#userCanvas').css('display', 'block');
 
-  window.addEventListener('deviceorientation', resetCanvas, false);
-
   document.body.addEventListener('touchmove', function(event) {
     event.preventDefault();
   }, false); 
@@ -41,11 +39,6 @@ var startController = function(socket) {
     }, timeInterval);
   }
 
-  function resetCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    drawScreen();
-  }
 
   function drawScreen() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -98,13 +91,10 @@ var startController = function(socket) {
   }
   
   function mouseUpListener(evt) {
-    window.console.log(dragging);
-    if (dragging) {
       dragging = false;
       position.x = canvas.width/2;
       position.y = canvas.height/2;
       drawScreen();
-    }
   }
 
 
