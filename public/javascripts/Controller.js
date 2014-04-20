@@ -12,7 +12,7 @@ var startController = function(socket) {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   var radius = 40; 
-  var outerRadius = (canvas.width/2) - 10;
+  var outerRadius = (canvas.width/2) - 20;
 
   var dragging = false;
   var position = {x: canvas.width/2, y:canvas.height/2};

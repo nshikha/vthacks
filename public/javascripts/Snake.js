@@ -75,12 +75,14 @@ var startSnake = function(socket) {
 
             //get old piece -> re paint the previous spot.
             var $oldpiece = $('#piece-'+piece.y+'-'+piece.x);
+            $oldpiece.text('');
             $oldpiece.css('background-color', 'rgba(221,221,221,0.4)');
 
             //update our attribs in new model
             piece.x = pieceJSON.x;
             piece.y = pieceJSON.y;
             piece.type = pieceJSON.type;
+
             piece.colorA = pieceJSON.colorA;
             piece.colorB = pieceJSON.colorB;
 
@@ -97,15 +99,9 @@ var startSnake = function(socket) {
             console.log('THIS IS VERY BAD -> Could not find the piece, when we just created it.');
         }
         //change piece's attributes according to the JSON
+        $piece.css('background-color', piece.colorA);
         if (piece.type === 'food'){
-            console.log(piece.colorA + 'Cant get access  to piece');
-            $piece.css('background-color', piece.colorA); //Food
-        }
-        else{
-            console.log('**** NOT GOOD CODE HERE *****'+ ' Cant get access to piece ');
-            $piece.css('background-color', piece.colorA); //Snake -> Dark slate
-
-            // $piece.css('background-color', '#222222'); //Snake -> Dark slate
+            $piece.text(piece.colorB);
         }
 
     });
@@ -113,7 +109,9 @@ var startSnake = function(socket) {
     //set back to normal tile mode
     socket.on('piece::disappear', function(pieceJSON) {
         console.log(pieceJSON);
-        $('#piece-'+pieceJSON.y+'-'+pieceJSON.x).css('background-color', 'rgba(221,221,221,0.4)');
+        var $piece = $('#piece-'+pieceJSON.y+'-'+pieceJSON.x);
+        $piece.css('background-color', 'rgba(221,221,221,0.4)');
+        $piece.text('');
     });
 
     socket.on('disconnect', function() {
