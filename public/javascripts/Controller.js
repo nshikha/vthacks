@@ -23,6 +23,8 @@ var startController = function(socket) {
 
   init();
 
+  socket.on('controller::loseGame', onDeath);
+
   function setupTester (timeInterval) {
     var optionsVar = [null, 'l', 'ul', 'u', 'ur', 'r', 'dr', 'd', 'dl'];
 
@@ -44,6 +46,11 @@ var startController = function(socket) {
           }
         }, timeInterval);
   };
+
+  function onDeath () {
+    var audio = $("#sound");
+    audio.play();
+  }
 
   function init() {
     drawScreen();

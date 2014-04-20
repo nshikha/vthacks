@@ -106,8 +106,6 @@ var SnakeUser = function(snakeGame, socket) {
 
     this.die = function() {
         self.socket.emit('controller::loseGame', null);
-        var audio = $("#sound");
-        audio.play();
         self.disappear();
         self.snakeGame.deregisterSnake(self);
     };
