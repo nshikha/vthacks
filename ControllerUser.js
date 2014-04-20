@@ -15,6 +15,7 @@ var User = function(snakeGame, socket) {
     while (this.snakeGame.getPieceAtCoord(newPieceX, newPieceY));
 
     this.piece = new Piece(snakeGame, newPieceX, newPieceY, 'food');
+    this.piece._user = this;
     this.piece.update();
 
     var self = this;
@@ -24,14 +25,48 @@ var User = function(snakeGame, socket) {
         return self._tmpdir;
     };
 
+    this.advance = function () {
+        if (self.piece.isEaten)
+            return;
+        var direction = self.getNextDirection();
+        if (direction === null)
+            return;
+        var newx = self.piece.x,
+            newy = self.piece.y;
+        if (direction === 'l')
+            newx --;
+        if (direction === 'r')
+            newx ++;
+        if (direction === 'u')
+            newy --;
+        if (direction === 'd')
+            newy ++;
+        // if boundary, then NOOP
+        if (self.snakeGame.coordOutOfBounds(newx, newy)) {
+            console.log('food outofbounds');
+            return;
+        }
+
+        // get the piece at the anticipated spot
+        var anticipatedPiece = self.snakeGame.getPieceAtCoord(newx, newy);
+        if (anticipatedPiece) {
+            console.log('food cant move there');
+            return;
+        }
+
+        self.piece.x = newx;
+        self.piece.y = newy;
+        self.piece.update();
+    };
+
+    this.die = function() {
+        self.socket.emit('controller::loseGame', null);
+        self.snakeGame.deregisterUser(anticipatedPiece._user);
+    };
+
     this.setupSocketBindings = function() {
         self.socket.on('controller::data', function(input) {
-            if (self.piece.isEaten) {
-                // user moved eaten food
-                console.log('ignoring because eaten');
-            } else {
-                console.log('controller');
-                console.log(input);
+            if (self.piece) {
                 // move self.piece and update
                 var dx = input[0];
                 var dy = input[1];
@@ -54,18 +89,6 @@ var User = function(snakeGame, socket) {
                 self._tmpdir = getDirection(dx, dy);
             }
         });
-
-        self.socket.on('disconnect', function() {
-            self.disappear();
-            // remove the user from the list of users.
-            var index = self.snakeGame.foodUsers.indexOf(self);
-            self.snakeGame.foodUsers.splice(index, 1);
-        });
-    };
-
-    this.disappear = function() {
-        if (!self.piece.eaten)
-            self.piece.disappear();
     };
 };
 module.exports = User;

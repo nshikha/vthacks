@@ -15,7 +15,6 @@ var SnakeUser = function(snakeGame, socket) {
 
     this.lastDirection = '';
     this.direction = 'r';
-    this.alive = true;
 
     var self = this;
 
@@ -24,14 +23,12 @@ var SnakeUser = function(snakeGame, socket) {
             p.update();
         });
         self.socket.on('snake::changeDirection', function(input) {
-            if (self.alive) {
-                // assert input is one of ['l', 'r', 'u', 'd']
-                var oppDirs = {'l':'r', 'r':'l', 'u':'d', 'd': 'u'};
-                // NOOP if input makes snake go backwards
-                if ((self.lastDirection != input) && (self.lastDirection != oppDirs[input])) {
-                    console.log('changing dir to '+input);
-                    self.direction = input;
-                }
+            // assert input is one of ['l', 'r', 'u', 'd']
+            var oppDirs = {'l':'r', 'r':'l', 'u':'d', 'd': 'u'};
+            // NOOP if input makes snake go backwards
+            if ((self.lastDirection != input) && (self.lastDirection != oppDirs[input])) {
+                console.log('changing dir to '+input);
+                self.direction = input;
             }
         });
 
@@ -46,45 +43,7 @@ var SnakeUser = function(snakeGame, socket) {
         });
     };
 
-    this.foodLoopIter = function() {
-        console.log('\n\nfood:loop\n\n');
-        console.log(self.snakeGame.foodUsers);
-        _.each(self.snakeGame.foodUsers, function(user) {
-            console.log(user);
-            var direction = user.getNextDirection();
-            if (direction === null)
-                return;
-            var newx = user.piece.x,
-                newy = user.piece.y;
-            if (direction === 'l')
-                newx --;
-            if (direction === 'r')
-                newx ++;
-            if (direction === 'u')
-                newy --;
-            if (direction === 'd')
-                newy ++;
-            // if boundary, then NOOP
-            if (self.snakeGame.coordOutOfBounds(newx, newy)) {
-                console.log('food outofbounds');
-                return;
-            }
-
-            // get the piece at the anticipated spot
-            var anticipatedPiece = self.snakeGame.getPieceAtCoord(newx, newy);
-            if (anticipatedPiece) {
-                console.log('food cant move there');
-                return;
-            }
-
-            user.piece.x = newx;
-            user.piece.y = newy;
-            user.piece.update();
-
-        });
-    };
-
-    this.snakeLoopIter = function() {
+    this.advance = function () {
         var head = self.snakePieces[0];
         var newx = head.x, newy = head.y;
         if (self.direction === 'l')
@@ -99,7 +58,7 @@ var SnakeUser = function(snakeGame, socket) {
         // if boundary, then snake game over
         if (self.snakeGame.coordOutOfBounds(newx, newy)) {
             console.log('outofbounds');
-            self.die();
+            self.snakeGame.die();
             return;
         }
 
@@ -117,13 +76,13 @@ var SnakeUser = function(snakeGame, socket) {
             if (anticipatedPiece.type === 'snake') {
                 // if snake, then snake game over
                 console.log('snakehitself');
-                self.die();
+                self.snakeGame.die();
                 return;
             } else {
                 // if food is there, then snake gets longer (doesnt get shorter), food isEaten
-                console.log('eatingfood\n\n\n\n\n\n\n\n\n\n\n');
-                anticipatedPiece.isEaten = true;
+                console.log('eatingfood');
                 anticipatedPiece.disappear();
+                anticipatedPiece._user.die();
             }
         } else {
             //pops tail off in normal case of snake moving.
@@ -140,22 +99,7 @@ var SnakeUser = function(snakeGame, socket) {
         this.lastDirection = self.direction; //cache last moved direction to avoid collissions.
     };
 
-    this.startSnakeLoop = function(delay) {
-        self.loopid = setInterval(function() {
-            if (self.alive) self.snakeLoopIter();
-        }, delay);
-
-        self.foodloopid = setInterval(function() {
-            if (self.alive) self.foodLoopIter();
-        }, delay);
-    };
-
-    this.die = function () {
-        self.alive = false;
-        clearInterval(self.loopid);
-        clearInterval(self.foodloopid);
-    }
-
+    // TODO NYI
     this.disappear = function() {
         while (self.snakePieces.length > 0) {
             p.disappear();

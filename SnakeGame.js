@@ -1,5 +1,6 @@
 var SnakeUser = require('./SnakeUser');
 var User = require('./ControllerUser');
+var _ = require('underscore');
 
 var SnakeGame = function(width, height) {
 
@@ -17,7 +18,7 @@ var SnakeGame = function(width, height) {
     this.hasStarted = function() {
         return self.snakeUser !== null;
     };
-    
+
     this.coordOutOfBounds = function(x, y) {
         return (x < 0) || (x >= self.width) ||
                    (y < 0) || (y >= self.height);
@@ -40,16 +41,56 @@ var SnakeGame = function(width, height) {
                 socket.emit('init', 'snake');
 
                 self.snakeUser.setupSocketBindings();
-                self.snakeUser.startSnakeLoop(200);
+
+                self.startSnakeLoop(200);
             } else {
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
                 self.foodUsers.push(user);
                 socket.emit('init', 'food');
                 user.setupSocketBindings();
+
+                socket.on('disconnect', function() {
+                    self.deregisterUser(user);
+                });
             }
         });
     };
+
+    this.deregisterUser = function(user) {
+        // remove the user from the list of users.
+        var index = self.foodUsers.indexOf(user);
+        if (index !== -1)
+            self.foodUsers.splice(index, 1);
+    }
+
+    this.foodLoopIter = function() {
+        _.each(self.foodUsers, function(user) {
+            user.advance();
+        });
+    };
+
+    this.snakeLoopIter = function() {
+        var snakeUser = this.snakeUser;
+        snakeUser.advance();
+    };
+
+    this.alive = true;
+    this.startSnakeLoop = function(delay) {
+        self.loopid = setInterval(function() {
+            if (self.alive) self.snakeLoopIter();
+        }, delay);
+
+        self.foodloopid = setInterval(function() {
+            if (self.alive) self.foodLoopIter();
+        }, delay);
+    };
+
+    this.die = function () {
+        self.alive = false;
+        clearInterval(self.loopid);
+        clearInterval(self.foodloopid);
+    }
 
     this.serve = function(app) {
         self.io = require('socket.io').listen(app);
