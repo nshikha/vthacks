@@ -84,6 +84,11 @@ var User = function(snakeGame, socket) {
 
     var self = this;
 
+    this._tmpdir = null; // null is no dir
+    this.getNextDirection = function() {
+        return self._tmpdir;
+    };
+
     this.setupSocketBindings = function(socket) {
         self.socket.on('controller::data', function(input) {
             if (self.piece.isEaten) {
@@ -91,6 +96,25 @@ var User = function(snakeGame, socket) {
                 console.log('ignoring because eaten');
             } else {
                 // move self.piece and update
+                var dx = input[0];
+                var dy = input[1];
+
+
+                //reversed form usual since +Y points downwards
+                function getDirection(x, y){
+                    if (x === 0 && y === 0)
+                        return null;
+                    if ( x + y >= 0 && x-y >= 0) {
+                        return "d";
+                    } else if (x+y < 0 && x-y >= 0) {
+                        return "u";
+                    } else if (x+y < 0 && x-y < 0) {
+                        return "l";
+                    } else {
+                        return "r";
+                    }
+                }
+                self._tmpdir = getDirection(dx, dy);
             }
         });
 
@@ -152,8 +176,42 @@ var SnakeUser = function(snakeGame, socket) {
         });
     };
 
+    this.foodLoopIter = function() {
+        _.each(self.foodUsers, function(user) {
+            var direction = user.getNextDirection();
+            if (direction === null)
+                return;
+            var newx = user.piece.x,
+                newy = user.piece.y;
+            if (direction === 'l')
+                newx --;
+            if (direction === 'r')
+                newx ++;
+            if (direction === 'u')
+                newy --;
+            if (direction === 'd')
+                newy ++;
+            // if boundary, then NOOP
+            if (self.snakeGame.coordOutOfBounds(newx, newy)) {
+                console.log('food outofbounds');
+                return;
+            }
+
+            // get the piece at the anticipated spot
+            var anticipatedPiece = self.snakeGame.getPieceAtCoord(newx, newy);
+            if (anticipatedPiece) {
+                console.log('food cant move there');
+                return;
+            }
+
+            user.piece.x = newx;
+            user.piece.y = newy;
+            user.piece.update();
+
+        });
+    };
+
     this.snakeLoopIter = function() {
-            self.die();
         var head = self.snakePieces[0];
         var newx = head.x, newy = head.y;
         if (self.direction === 'l')
@@ -213,11 +271,16 @@ var SnakeUser = function(snakeGame, socket) {
         self.loopid = setInterval(function() {
             if (self.alive) self.snakeLoopIter();
         }, delay);
+
+        self.foodloopid = setInterval(function() {
+            if (self.alive) self.foodLoopIter();
+        }, delay);
     };
 
     this.die = function () {
         self.alive = false;
         clearInterval(self.loopid);
+        clearInterval(self.foodloopid);
     }
 
     this.disappear = function() {
