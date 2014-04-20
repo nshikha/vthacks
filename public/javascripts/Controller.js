@@ -48,9 +48,13 @@ var startController = function(socket) {
   };
 
   function onDeath () {
-    var audio = document.getElementById("sound");
-    audio.play();
-    alert('You died! Refresh to play again.');
+    if (TESTING) {
+        location.reload(true);
+    } else {
+        var audio = document.getElementById("sound");
+        audio.play();
+        alert('You died! Refresh to play again.');
+    }
   }
 
   function init() {
@@ -65,7 +69,8 @@ var startController = function(socket) {
     var timeInterval = 250;
 
 
-    if (location.search === "?test=true")
+    TESTING = location.search === "?test=1";
+    if (TESTING)
         setupTester(timeInterval);
     else
         setupDataEmitter(timeInterval);
