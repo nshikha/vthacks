@@ -23,21 +23,16 @@ var startController = function(socket) {
 
   init();
 
-  var setupTester = function () {
+  function setupTester (timeInterval) {
     var optionsVar = [null, 'l', 'ul', 'u', 'ur', 'r', 'dr', 'd', 'dl'];
-    optionsVar[Math.floor((Math.random()*optionsVar.length)-1)];
 
-    setInterval(function(timeInterval){
-      socket.emit('controller::data', sendDirection());
-      var direction = sendDirection();
-      if (direction !== lastDirection) {
-          socket.emit('controller::data', direction);
-          lastDirection = direction;
-      }
+    setInterval(function(){
+      var direction = optionsVar[Math.floor(Math.random()*optionsVar.length)];
+      socket.emit('controller::data', direction);
     }, timeInterval);
   };
 
-  var setupDataEmitter = function () {
+  function setupDataEmitter (timeInterval) {
         var lastDirection = null;
 
         setInterval(function(){
