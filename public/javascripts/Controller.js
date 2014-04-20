@@ -57,8 +57,10 @@ var startController = function(socket) {
     var timeInterval = 250;
 
 
-    //setupDataEmitter(timeInterval);
-    setupTester(timeInterval);
+    if (location.search === "?test=true")
+        setupTester(timeInterval);
+    else
+        setupDataEmitter(timeInterval);
 
 
   }
