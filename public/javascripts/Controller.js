@@ -34,6 +34,7 @@ var startController = function(socket) {
     var timeInterval = 250;
     var lastDirection = null
     setInterval(function(){
+      socket.emit('controller::data', sendDirection());
       var direction = sendDirection();
       if (direction !== lastDirection) {
           socket.emit('controller::data', direction);
@@ -121,16 +122,18 @@ var startController = function(socket) {
       var touchY = touch.pageY;
     }
     
-    //clamp x and y positions to prevent object from dragging outside of canvas
     posX = touchX - dragHoldX;
-    posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
     posY = touchY - dragHoldY;
-    posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
+      //clamp x and y positions to prevent object from dragging outside of canvas
+    if (posX < minX || posX > maxX || posY < minY || posY > maxY) {
+        posX = canvas.width/2;
+        posY = canvas.height/2;
+        dragging = false;
+    }
 
     position.x = posX;
     position.y = posY;
 
-    //setPositions(posX, posY);
     drawScreen();
   }
 
@@ -147,16 +150,17 @@ var startController = function(socket) {
       mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
       mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
       
-      //clamp x and y positions to prevent object from dragging outside of canvas
       posX = mouseX - dragHoldX;
-      posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
       posY = mouseY - dragHoldY;
-      posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
+      //clamp x and y positions to prevent object from dragging outside of canvas
+      if (posX < minX || posX > maxX || posY < minY || posY > maxY) {
+        posX = canvas.width/2;
+        posY = canvas.height/2;
+        dragging = false;
+      }
 
       position.x = posX;
       position.y = posY;
-      //setPositions(posX, posY);
-
       drawScreen();
     }
 
