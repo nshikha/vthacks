@@ -58,7 +58,7 @@ var SnakeUser = function(snakeGame, socket) {
         // if boundary, then snake game over
         if (self.snakeGame.coordOutOfBounds(newx, newy)) {
             console.log('outofbounds');
-            self.snakeGame.die();
+            self.die();
             return;
         }
 
@@ -76,7 +76,7 @@ var SnakeUser = function(snakeGame, socket) {
             if (anticipatedPiece.type === 'snake') {
                 // if snake, then snake game over
                 console.log('snakehitself');
-                self.snakeGame.die();
+                self.die();
                 return;
             } else {
                 // if food is there, then snake gets longer (doesnt get shorter), food isEaten
@@ -97,6 +97,12 @@ var SnakeUser = function(snakeGame, socket) {
         self.snakePieces = [newP].concat(self.snakePieces);
         console.log('moved '+self.direction+' **');
         this.lastDirection = self.direction; //cache last moved direction to avoid collissions.
+    };
+
+    this.die = function() {
+        self.socket.emit('controller::loseGame', null);
+        self.disappear();
+        self.snakeGame.deregisterSnake(self);
     };
 
     this.disappear = function() {

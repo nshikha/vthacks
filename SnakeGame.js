@@ -78,19 +78,18 @@ var SnakeGame = function(width, height) {
             snakeUser.advance();
     };
 
-    this.alive = true;
     this.startSnakeLoop = function(delay) {
         self.loopid = setInterval(function() {
-            if (self.alive) self.snakeLoopIter();
+            self.snakeLoopIter();
         }, delay);
 
         self.foodloopid = setInterval(function() {
-            if (self.alive) self.foodLoopIter();
+            self.foodLoopIter();
         }, delay);
     };
 
+    // not used right now
     this.die = function () {
-        self.alive = false;
         clearInterval(self.loopid);
         clearInterval(self.foodloopid);
     }
