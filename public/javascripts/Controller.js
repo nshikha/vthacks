@@ -3,6 +3,8 @@ var start = function(socket) {
   $('body').append('<link rel="stylesheet" type="text/css" href="/stylesheets/controller.css">');
   $('#userCanvas').css('display', 'block');
 
+  window.addEventListener('deviceorientation', resetCanvas, false);
+
   var timeInterval = 250;
   setInterval(function(){
     socket.emit('position', sendDirection()); 
@@ -19,12 +21,12 @@ var start = function(socket) {
   var radius = 40; 
   var time
 
-  var dragging;
-  var mouseX;
-  var mouseY;
-  var dragHoldX;
-  var dragHoldY;
-  var position = {x: canvas.width/2, y:canvas.height/2}
+  var dragging = false;
+  var position = {x: canvas.width/2, y:canvas.height/2};
+  var mouseX = 0;
+  var mouseY = 0;
+  var dragHoldX = 0;
+  var dragHoldY = 0;
 
   init();
 
@@ -36,6 +38,12 @@ var start = function(socket) {
     canvas.addEventListener("touchstart", touchDownListener, false);
     canvas.addEventListener("touchmove", touchMoveListener, false);
     canvas.addEventListener("touchend", touchEndListener, false);
+  }
+
+  function resetCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    drawScreen();
   }
 
   function drawScreen() {
