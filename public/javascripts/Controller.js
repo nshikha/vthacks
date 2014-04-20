@@ -50,6 +50,7 @@ var startController = function(socket) {
   function onDeath () {
     var audio = $("#sound");
     audio.play();
+    alert('You died! Refresh to play again.');
   }
 
   function init() {
