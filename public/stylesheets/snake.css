@@ -32,9 +32,12 @@
     padding: 0;
 
 }
-#body {padding:0}
+#body {
+    padding:0; 
+}
 
-body, html { display:absolute;
+body, html {
+    display:absolute;
     overflow-x: hidden; 
     overflow-y: auto;
     margin:0;
