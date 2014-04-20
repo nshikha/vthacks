@@ -64,18 +64,33 @@ var startSnake = function(socket) {
     setupKeyBindings(socket);
     buildBoard(numRows, numCols);
 
+    var pieces = {}; // hash from id to piece
 
     socket.on('piece::update', function(pieceJSON) {
         //get piece
         console.log(pieceJSON)
-        piece = $('#piece-'+pieceJSON.y+'-'+pieceJSON.x);
-        if (!piece)
+
+        var piece = pieces[pieceJSON.id];
+        if (piece) {
+            var $oldpiece = $('#piece-'+piece.y+'-'+piece.x);
+            $oldpiece.css('background-color', 'white');
+            piece.x = pieceJSON.x;
+            piece.y = pieceJSON.y;
+            piece.type = pieceJSON.type;
+        } else {
+            piece = pieceJSON;
+            pieces[piece.id] = piece;
+        }
+
+
+        var $piece = $('#piece-'+piece.y+'-'+piece.x);
+        if (!$piece)
             console.log('THIS IS VERY BAD -> Could not find the piece');
         //change piece's attributes according to the JSON
-        if (pieceJSON.type === 'food')
-            piece.css('background-color', 'green');
+        if (piece.type === 'food')
+            $piece.css('background-color', 'green');
         else
-            piece.css('background-color', 'blue');
+            $piece.css('background-color', 'blue');
 
     });
 

@@ -107,13 +107,13 @@ var User = function(snakeGame, socket) {
                     if (x === 0 && y === 0)
                         return null;
                     if ( x + y >= 0 && x-y >= 0) {
-                        return "d";
+                        return "r";
                     } else if (x+y < 0 && x-y >= 0) {
                         return "u";
                     } else if (x+y < 0 && x-y < 0) {
                         return "l";
                     } else {
-                        return "r";
+                        return "d";
                     }
                 }
                 self._tmpdir = getDirection(dx, dy);
@@ -179,7 +179,10 @@ var SnakeUser = function(snakeGame, socket) {
     };
 
     this.foodLoopIter = function() {
-        _.each(self.foodUsers, function(user) {
+        console.log('\n\nfood:loop\n\n');
+        console.log(self.snakeGame.foodUsers);
+        _.each(self.snakeGame.foodUsers, function(user) {
+            console.log(user);
             var direction = user.getNextDirection();
             if (direction === null)
                 return;
