@@ -20,15 +20,25 @@ var User = function(snakeGame, socket) {
 
     var self = this;
 
-    this._tmpdir = null; // null is no dir
+    this.lastDir = null; // null is no dir
+    this.diagState = 0; // if lastDir is diag direction, this will be 0 or 1. 0 vert, 1 is hor.
     this.getNextDirection = function() {
-        return self._tmpdir;
+        if ('u r d l'.split(' ').indexOf(self.lastDir) !== -1) {
+            return self.lastDir;
+        } else if ('ur dr dl ul'.split(' ').indexOf(self.lastDir) !== -1) {
+            var dir = self.lastDir[self.diagState];
+            self.diagState += 1;
+            self.diagState %= 2;
+            return dir;
+        } else
+            return 't';
     };
 
     this.advance = function () {
         if (self.piece.isEaten)
             return;
         var direction = self.getNextDirection();
+        console.log(direction);
         if (direction === null)
             return;
         var newx = self.piece.x,
@@ -67,7 +77,9 @@ var User = function(snakeGame, socket) {
     this.setupSocketBindings = function() {
         self.socket.on('controller::data', function(input) {
             if (self.piece) {
-                self._tmpdir = input;
+                if (input === null || 'u r d l ur dr dl ul'.split(' ').indexOf(input) !== -1) {
+                    self.lastDir = input;
+                }
             }
         });
     };
