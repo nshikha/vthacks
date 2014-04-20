@@ -47,6 +47,12 @@ var startController = function(socket) {
 
   function drawCircle(ctx, cx, cy, radius) {
     ctx.beginPath();
+    ctx.lineWidth = 5;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#696969';
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.fillStyle = 'rgba(75, 77, 70,0.6)';
     ctx.arc(cx, cy, radius, 0, 2*Math.PI, true);
     ctx.fill();
   }

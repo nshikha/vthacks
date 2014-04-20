@@ -1,25 +1,26 @@
 .piece {
-    border: 1px solid grey;
+    border: 1px solid white;
     border-right: 0;
     border-top: 0;
-
+    background-color: rgba(221,221,221,0.4);
     display: inline-block;
     -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
     margin: 0;
 }
-/*pieces on the top should have top border*/
-.row:first-child .piece {
-    border-top: 1px solid grey;
-    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+
+
+/*pieces at bottom without border */
+.row:last-child .piece {
+    border-bottom: 0;
 }
 
 .row .piece:first-child {
-    border-left: 1px solid grey;
-    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+    border-left: 0;
 }
+
+/*right */
 .row .piece:last-child {
-    border-right: 1px solid grey;
-    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+
 }
 
 .row {
@@ -41,4 +42,12 @@ body, html {
     overflow-x: hidden; 
     overflow-y: auto;
     margin:0;
+}
+
+html { 
+  background: url("vtccblur.jpg") no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }

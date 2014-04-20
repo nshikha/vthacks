@@ -73,7 +73,7 @@ var startSnake = function(socket) {
         var piece = pieces[pieceJSON.id];
         if (piece) {
             var $oldpiece = $('#piece-'+piece.y+'-'+piece.x);
-            $oldpiece.css('background-color', 'white');
+            $oldpiece.css('background-color', '#DDD');
             piece.x = pieceJSON.x;
             piece.y = pieceJSON.y;
             piece.type = pieceJSON.type;
@@ -94,9 +94,10 @@ var startSnake = function(socket) {
 
     });
 
+    //set back to normal tile mode
     socket.on('piece::disappear', function(pieceJSON) {
         console.log(pieceJSON);
-        $('#piece-'+pieceJSON.y+'-'+pieceJSON.x).css('background-color', 'white');
+        $('#piece-'+pieceJSON.y+'-'+pieceJSON.x).css('background-color', "rgba(221,221,221,0.4)");
     });
 
     socket.on('disconnect', function() {
