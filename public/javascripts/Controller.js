@@ -32,10 +32,13 @@ var startController = function(socket) {
     canvas.addEventListener("touchend", touchEndListener, false);
 
     var timeInterval = 250;
+    var lastDirection = null
     setInterval(function(){
-        console.log('hi');
-        console.log(sendDirection());
-      socket.emit('controller::data', sendDirection());
+      var direction = sendDirection();
+      if (direction !== lastDirection) {
+          socket.emit('controller::data', direction);
+          lastDirection = direction;
+      }
     }, timeInterval);
   }
 
@@ -163,9 +166,25 @@ var startController = function(socket) {
   function sendDirection() {
     var x = position.x - (canvas.width/2);
     var y = position.y - (canvas.height/2);
-    return [x,y];
+
+    //reversed form usual since +Y points downwards
+    function getDirection(x, y){
+        if (x === 0 && y === 0)
+            return null;
+        if ( x + y >= 0 && x-y >= 0) {
+            return "r";
+        } else if (x+y < 0 && x-y >= 0) {
+            return "u";
+        } else if (x+y < 0 && x-y < 0) {
+            return "l";
+        } else {
+            return "d";
+        }
+    }
+
+    return getDirection(x, y);
   }
-  
+
   function hitTest(px, py) {
     var dx = px - position.x;
     var dy = py - position.y;

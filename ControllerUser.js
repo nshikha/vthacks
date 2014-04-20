@@ -67,26 +67,7 @@ var User = function(snakeGame, socket) {
     this.setupSocketBindings = function() {
         self.socket.on('controller::data', function(input) {
             if (self.piece) {
-                // move self.piece and update
-                var dx = input[0];
-                var dy = input[1];
-
-
-                //reversed form usual since +Y points downwards
-                function getDirection(x, y){
-                    if (x === 0 && y === 0)
-                        return null;
-                    if ( x + y >= 0 && x-y >= 0) {
-                        return "r";
-                    } else if (x+y < 0 && x-y >= 0) {
-                        return "u";
-                    } else if (x+y < 0 && x-y < 0) {
-                        return "l";
-                    } else {
-                        return "d";
-                    }
-                }
-                self._tmpdir = getDirection(dx, dy);
+                self._tmpdir = input;
             }
         });
     };
