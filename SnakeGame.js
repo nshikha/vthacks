@@ -85,7 +85,7 @@ var SnakeGame = function(width, height) {
 
         self.foodloopid = setInterval(function() {
             self.foodLoopIter();
-        }, delay);
+        }, delay / 3 * 2);
     };
 
     // not used right now
