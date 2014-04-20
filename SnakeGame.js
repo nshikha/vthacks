@@ -40,7 +40,8 @@ var SnakeGame = function(width, height) {
                 self.snakeUser.setupSocketBindings();
 
                 socket.on('disconnect', function() {
-                    self.snakeUser.disappear();
+                    if (self.snakeUser)
+                        self.snakeUser.disappear();
                     self.deregisterSnake();
                 });
 
