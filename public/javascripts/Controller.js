@@ -48,7 +48,7 @@ var startController = function(socket) {
   };
 
   function onDeath () {
-    var audio = $("#sound");
+    var audio = document.getElementById("sound");
     audio.play();
     alert('You died! Refresh to play again.');
   }
