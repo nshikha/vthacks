@@ -36,7 +36,6 @@ var User = function(snakeGame, socket) {
         if (self.piece.isEaten)
             return;
         var direction = self.getNextDirection();
-        console.log(direction);
         if (direction === null)
             return;
         var newx = self.piece.x,
@@ -68,18 +67,28 @@ var User = function(snakeGame, socket) {
     };
 
     this.die = function() {
-        self.socket.emit('controller::loseGame', null);
+        //self.socket.emit('controller::loseGame', null);
+        console.log('die');
         self.snakeGame.deregisterUser(self);
+        clearInterval(self.randloop);
     };
 
     this.setupSocketBindings = function() {
+        /*
         self.socket.on('controller::data', function(input) {
             if (self.piece) {
                 if (input === null || 'u r d l ur dr dl ul'.split(' ').indexOf(input) !== -1) {
                     self.lastDir = input;
                 }
             }
-        });
+        });*/
+
+        self.randloop = setInterval(function() {
+            var choices = 'null u r d l ur dr dl ul'.split(' ');
+            var input = choices[Math.floor((Math.random()*choices.length))];
+            if (input === 'null') input = null;
+            self.lastDir = input;
+        }, 1000);
     };
 };
 module.exports = User;

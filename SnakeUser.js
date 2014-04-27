@@ -43,12 +43,6 @@ var SnakeUser = function(snakeGame, socket) {
             }
         });
 
-        // TODO move this out of here
-        self.socket.on('snake::setBoardSize', function(wh) {
-            self.snakeGame.width = wh.width;
-            self.snakeGame.height = wh.height;
-        });
-
         socket.on('disconnect', function() {
             self.disappear();
         });

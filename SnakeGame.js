@@ -50,6 +50,22 @@ var SnakeGame = function(width, height) {
                 socket.on('disconnect', function() {
                     delete self.boardSocket;
                 });
+
+                // TODO move this out of here
+                socket.on('snake::setBoardSize', function(wh) {
+                    if (!self.width) {
+                        self.width = wh.width;
+                        self.height = wh.height;
+
+                        /* create some foods on the board */
+                        for (var i = 0; i < 10; i ++) {
+                            var user = new User(self);
+                            user.setupSocketBindings();
+                            self.foodUsers.push(user);
+                        }
+                    }
+                });
+
             } else {
                 socket.emit('init', 'controller::snake');
                 self.startSnakeWithSocket(socket);
