@@ -43,7 +43,7 @@ var SnakeUser = function(snakeGame, socket) {
             }
         });
 
-        socket.on('disconnect', function() {
+        self.socket.on('disconnect', function() {
             self.disappear();
         });
     };
