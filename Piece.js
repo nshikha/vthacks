@@ -34,14 +34,13 @@ var Piece = function(snakeGame, x, y, type) {
     };
 
     this.update = function() {
-        // snakeUser's socket is the snake board socket
-        if (self.snakeGame.snakeUser)
-        self.snakeGame.snakeUser.socket.emit('piece::update', self.JSON());
+        if (self.snakeGame.boardSocket)
+        self.snakeGame.boardSocket.emit('piece::update', self.JSON());
     };
 
     this.disappear = function() {
-        if (self.snakeGame.snakeUser)
-        this.snakeGame.snakeUser.socket.emit('piece::disappear', self.JSON());
+        if (self.snakeGame.boardSocket)
+        this.snakeGame.boardSocket.emit('piece::disappear', self.JSON());
 
         // pieces bookkeeping
         // remove the piece from the pieces array in snakeGame

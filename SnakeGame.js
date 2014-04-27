@@ -7,10 +7,12 @@ var SnakeGame = function(width, height) {
     this.width;
     this.height;
 
+    this.boardSocket;
+
     this.pieces = []; //automatically kept consistent by the Piece class
 
     // When snakeUser is null, the game has not yet started and is waiting for a snake to connect.
-    this.snakeUser = null;
+    this.snakeUsers = [];
     this.foodUsers = [];
 
     var self = this;
@@ -31,34 +33,37 @@ var SnakeGame = function(width, height) {
     };
 
     this.startSnakeWithSocket = function(socket) {
-        self.snakeUser = new SnakeUser(self, socket, true);
-        self.snakeUser.setupSocketBindings();
+        var snakeUser = new SnakeUser(self, socket);
+        self.snakeUsers.push(snakeUser);
+        snakeUser.setupSocketBindings();
+
+        socket.on('disconnect', function() {
+            self.deregisterSnake(snakeUser);
+        });
     };
 
     this.setupIO = function() {
         self.io.sockets.on('connection', function (socket) {
-            if (self.snakeUser === null) {
-                // create a snakeUser and bind to self.snakeUser
-                socket.emit('init', 'snake');
-                self.startSnakeWithSocket(socket);
-
+            if (!self.boardSocket) {
+                self.boardSocket = socket;
+                socket.emit('init', 'board');
                 socket.on('disconnect', function() {
-                    if (self.snakeUser)
-                        self.snakeUser.disappear();
-                    self.deregisterSnake();
+                    delete self.boardSocket;
                 });
-
             } else {
+                socket.emit('init', 'controller::snake');
+                self.startSnakeWithSocket(socket);
+                /* Later maybe allow people to join as food.
                 // create a foodUser and push onto self.foodUsers
                 var user = new User(self, socket);
                 self.foodUsers.push(user);
-                socket.emit('init', 'food');
                 user.setupSocketBindings();
 
                 socket.on('disconnect', function() {
                     user.piece.disappear();
                     self.deregisterUser(user);
                 });
+                */
             }
         });
     };
@@ -68,12 +73,16 @@ var SnakeGame = function(width, height) {
         var index = self.foodUsers.indexOf(user);
         if (index !== -1)
             self.foodUsers.splice(index, 1);
+        else
+            console.log('uh oh user wasnt found was it already deregistered?');
     }
 
-    this.deregisterSnake = function() {
-        if (self.snakeUser) {
-            self.snakeUser = null;
-        }
+    this.deregisterSnake = function(snakeUser) {
+        var index = self.snakeUsers.indexOf(snakeUser);
+        if (index !== -1)
+            self.snakeUsers.splice(index, 1);
+        else
+            console.log('uh oh snake wasnt found was it already deregistered?');
     };
 
     this.foodLoopIter = function() {
@@ -83,9 +92,10 @@ var SnakeGame = function(width, height) {
     };
 
     this.snakeLoopIter = function() {
-        var snakeUser = this.snakeUser;
-        if (snakeUser)
+        var snakeUsers = this.snakeUsers;
+        _.each(snakeUsers, function(snakeUser) {
             snakeUser.advance();
+        });
     };
 
     this.startSnakeLoop = function(delay) {
@@ -97,12 +107,6 @@ var SnakeGame = function(width, height) {
             self.foodLoopIter();
         }, delay / 3 * 2);
     };
-
-    // not used right now
-    this.die = function () {
-        clearInterval(self.loopid);
-        clearInterval(self.foodloopid);
-    }
 
     this.serve = function(app) {
         self.io = require('socket.io').listen(app);

@@ -38,10 +38,10 @@ var startController = function(socket) {
         var lastDirection = null;
 
         setInterval(function(){
-          socket.emit('controller::data', sendDirection());
+          socket.emit('snake::changeDirection', sendDirection());
           var direction = sendDirection();
           if (direction !== lastDirection) {
-              socket.emit('controller::data', direction);
+              socket.emit('snake::changeDirection', direction);
               lastDirection = direction;
           }
         }, timeInterval);
@@ -216,6 +216,23 @@ var startController = function(socket) {
     var x = position.x - (canvas.width/2);
     var y = position.y - (canvas.height/2);
 
+
+    //reversed form usual since +Y points downwards
+    function getDirection(x, y){
+        if (x === 0 && y === 0)
+            return null;
+        if ( x + y >= 0 && x-y >= 0) {
+            return "r";
+        } else if (x+y < 0 && x-y >= 0) {
+            return "u";
+        } else if (x+y < 0 && x-y < 0) {
+            return "l";
+        } else {
+            return "d";
+        }
+    }
+
+    /*
     //reversed form usual since +Y points downwards
     function getDirection(x, y){
         if (x === 0 && y === 0)
@@ -243,7 +260,7 @@ var startController = function(socket) {
             if (x > 0) return 'r';
             else return 'l';
         }
-    }
+    }*/
 
     return getDirection(x, y);
   }

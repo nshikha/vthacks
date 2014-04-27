@@ -7,7 +7,7 @@ var SnakeUser = function(snakeGame, socket) {
     this.socket = socket;
     this.id = getUID();
 
-    // SNAKE PIECES
+    // SNAKE PIECES TODO make them not fall on top of each other when multiple people connect
     this.snakePieces = [new Piece(snakeGame, 3, 5, 'snake'),
                        new Piece(snakeGame, 3, 4, 'snake'),
                        new Piece(snakeGame, 3, 3, 'snake')];
@@ -24,8 +24,17 @@ var SnakeUser = function(snakeGame, socket) {
         _.each(self.snakePieces, function(p) {
             p.update();
         });
+
+        // TODO mod controller to emit this
         self.socket.on('snake::changeDirection', function(input) {
             // assert input is one of ['l', 'r', 'u', 'd']
+            if (input === null)
+                return;
+            if ('l r u d'.split(' ').indexOf(input) === -1) {
+                console.log('Illegal input');
+                console.log(input);
+                return;
+            }
             var oppDirs = {'l':'r', 'r':'l', 'u':'d', 'd': 'u'};
             // NOOP if input makes snake go backwards
             if ((self.lastDirection != input) && (self.lastDirection != oppDirs[input])) {
@@ -34,9 +43,14 @@ var SnakeUser = function(snakeGame, socket) {
             }
         });
 
+        // TODO move this out of here
         self.socket.on('snake::setBoardSize', function(wh) {
             self.snakeGame.width = wh.width;
             self.snakeGame.height = wh.height;
+        });
+
+        socket.on('disconnect', function() {
+            self.disappear();
         });
     };
 
@@ -60,6 +74,7 @@ var SnakeUser = function(snakeGame, socket) {
         }
 
         // get the piece at the anticipated spot
+        // TODO worry about someone elses snake tail
         var tail = self.snakePieces[self.snakePieces.length - 1];
 
         // if it's the end of tail, normal case, jk lol the tail is moving
@@ -68,7 +83,6 @@ var SnakeUser = function(snakeGame, socket) {
             anticipatedPiece = null;
 
         var newP;
-        //added fix for case that you are going to overlap the tail of the snake
         if (anticipatedPiece) {
             if (anticipatedPiece.type === 'snake') {
                 // if snake, then snake game over

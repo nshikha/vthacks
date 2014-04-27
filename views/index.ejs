@@ -17,7 +17,7 @@ $(document).ready(function() {
   }
   var socket = io.connect('/', {reconnect: false});
   socket.on('init', function (data) {
-    if (data === 'snake') {
+    if (data === 'board') {
         startSnake(socket);
     } else {
         startController(socket);
